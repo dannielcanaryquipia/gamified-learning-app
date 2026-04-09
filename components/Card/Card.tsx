@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { StyleSheet, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from 'react-native';
 import { scale } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 
@@ -33,11 +33,18 @@ const Card: React.FC<CardProps> = ({
   const cardStyles = {
     elevated: {
       backgroundColor: colors.card,
-      shadowColor: colors.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      ...Platform.select({
+        web: {
+          boxShadow: `0px 2px 8px ${colors.text}1A`,
+        },
+        default: {
+          shadowColor: colors.text,
+          shadowOffset: { width: 0, height: scale(2) },
+          shadowOpacity: 0.1,
+          shadowRadius: scale(4),
+          elevation: 3,
+        },
+      }),
       borderWidth: 0,
     },
     outlined: {
@@ -88,7 +95,7 @@ const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: scale(8),
+    borderRadius: scale(16),
     overflow: 'hidden',
   },
   content: {

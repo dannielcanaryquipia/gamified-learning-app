@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { scale } from '../../constants/responsive';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors } from '../../contexts/ThemeContext';
 
 interface StreakCardProps {
@@ -44,15 +44,22 @@ const StreakCard: React.FC<StreakCardProps> = ({ currentStreak, onPress, isDark 
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: scale(12),
     borderWidth: 1,
     padding: scale(16),
     marginBottom: scale(16),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(2) },
+        shadowOpacity: 0.1,
+        shadowRadius: scale(4),
+        elevation: 2,
+      },
+    }),
   },
   content: {
     flexDirection: 'row',
@@ -61,7 +68,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: scale(48),
     height: scale(48),
-    borderRadius: 12,
+    borderRadius: scale(12),
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: scale(12),
@@ -70,12 +77,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   streakLabel: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
     marginBottom: scale(2),
     opacity: 0.8,
   },
   streakCount: {
-    fontSize: scale(20),
+    fontSize: responsiveFontSize(20),
     fontWeight: 'bold',
   },
   chevron: {

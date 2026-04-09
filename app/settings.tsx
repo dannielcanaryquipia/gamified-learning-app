@@ -2,8 +2,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import { scale } from '../constants/responsive';
+import { scale, responsiveFontSize } from '../constants/responsive';
 import { getThemeColors, useTheme } from '../contexts/ThemeContext';
+import PageContainer from '../components/PageContainer/PageContainer';
 
 type SettingsItemProps = {
   icon: React.ComponentProps<typeof MaterialIcons>['name'];
@@ -25,7 +26,7 @@ const SettingsItem = ({ icon, title, onPress, rightComponent }: SettingsItemProp
       <View style={styles.settingLeft}>
         <MaterialIcons 
           name={icon} 
-          size={24} 
+          size={scale(24)} 
           color={colors.primary} 
           style={styles.icon} 
         />
@@ -34,7 +35,7 @@ const SettingsItem = ({ icon, title, onPress, rightComponent }: SettingsItemProp
       {rightComponent || (
         <MaterialIcons 
           name="chevron-right" 
-          size={24} 
+          size={scale(24)} 
           color={colors.placeholder} 
         />
       )}
@@ -51,9 +52,19 @@ export default function SettingsScreen() {
     toggleTheme(value ? 'dark' : 'light');
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border, justifyContent: 'center' }]}>
+    <PageContainer
+      scrollable={true}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <MaterialIcons name="arrow-back" size={scale(24)} color={colors.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
       </View>
 
@@ -63,7 +74,7 @@ export default function SettingsScreen() {
           <View style={styles.settingLeft}>
             <MaterialIcons 
               name={isDark ? 'dark-mode' : 'light-mode'} 
-              size={24} 
+              size={scale(24)} 
               color={colors.primary} 
               style={styles.icon} 
             />
@@ -91,42 +102,41 @@ export default function SettingsScreen() {
           onPress={() => router.push('/about')}
         />
       </View>
-    </View>
+    </PageContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  contentContainer: {
+    paddingBottom: scale(40),
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: scale(16),
+    paddingVertical: scale(20),
     borderBottomWidth: 1,
+    position: 'relative',
   },
   backButton: {
+    position: 'absolute',
+    left: 0,
+    zIndex: 1,
     padding: scale(4),
   },
   headerTitle: {
-    fontSize: scale(18),
+    fontSize: responsiveFontSize(18),
     fontWeight: '600',
     flex: 1,
     textAlign: 'center',
-    marginLeft: scale(-24), // To center the title
-  },
-  headerRight: {
-    width: scale(32),
   },
   section: {
     marginTop: scale(24),
   },
   sectionTitle: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
     fontWeight: '600',
-    marginBottom: scale(12),
-    paddingHorizontal: scale(16),
+    marginBottom: scale(8),
+    paddingHorizontal: scale(4),
     opacity: 0.8,
   },
   settingItem: {
@@ -134,7 +144,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: scale(16),
-    paddingHorizontal: scale(16),
     borderBottomWidth: 1,
   },
   settingLeft: {
@@ -147,6 +156,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   settingText: {
-    fontSize: scale(16),
+    fontSize: responsiveFontSize(16),
   },
 });

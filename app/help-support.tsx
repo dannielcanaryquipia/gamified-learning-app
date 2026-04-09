@@ -1,9 +1,10 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { scale } from '../constants/responsive';
+import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { scale, responsiveFontSize } from '../constants/responsive';
 import { getThemeColors, useTheme } from '../contexts/ThemeContext';
+import PageContainer from '../components/PageContainer/PageContainer';
 
 type SupportItemProps = {
   icon: React.ComponentProps<typeof MaterialIcons>['name'];
@@ -20,15 +21,16 @@ const SupportItem = ({ icon, title, description, onPress }: SupportItemProps) =>
     <TouchableOpacity 
       style={[styles.supportItem, { backgroundColor: colors.card }]}
       onPress={onPress}
+      activeOpacity={0.8}
     >
       <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}10` }]}>
-        <MaterialIcons name={icon} size={24} color={colors.primary} />
+        <MaterialIcons name={icon} size={scale(24)} color={colors.primary} />
       </View>
       <View style={styles.textContainer}>
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         <Text style={[styles.description, { color: colors.placeholder }]}>{description}</Text>
       </View>
-      <MaterialIcons name="chevron-right" size={24} color={colors.placeholder} />
+      <MaterialIcons name="chevron-right" size={scale(24)} color={colors.placeholder} />
     </TouchableOpacity>
   );
 };
@@ -39,7 +41,6 @@ export default function HelpSupportScreen() {
   const colors = getThemeColors(isDark);
 
   const handleContactSupport = () => {
-    // In a real app, this would open an email client or support form
     Linking.openURL('mailto:support@example.com');
   };
 
@@ -48,13 +49,23 @@ export default function HelpSupportScreen() {
     alert('FAQs would be shown here');
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border, justifyContent: 'center' }]}>
+    <PageContainer
+      scrollable={true}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <MaterialIcons name="arrow-back" size={scale(24)} color={colors.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Help & Support</Text>
       </View>
 
-      <ScrollView style={styles.content}>
+      <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.primary }]}>How can we help you?</Text>
         
         <SupportItem
@@ -76,41 +87,39 @@ export default function HelpSupportScreen() {
             Our support team typically responds within 24 hours.
           </Text>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </PageContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  contentContainer: {
+    paddingBottom: scale(40),
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: scale(16),
+    paddingVertical: scale(20),
     borderBottomWidth: 1,
+    position: 'relative',
   },
   backButton: {
+    position: 'absolute',
+    left: 0,
+    zIndex: 1,
     padding: scale(4),
   },
   headerTitle: {
-    fontSize: scale(18),
+    fontSize: responsiveFontSize(18),
     fontWeight: '600',
     flex: 1,
     textAlign: 'center',
-    marginLeft: scale(-24), // To center the title
   },
-  headerRight: {
-    width: scale(32),
-  },
-  content: {
-    flex: 1,
-    padding: scale(16),
+  section: {
+    marginTop: scale(24),
   },
   sectionTitle: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
     fontWeight: '600',
     marginBottom: scale(16),
     opacity: 0.8,
@@ -121,6 +130,18 @@ const styles = StyleSheet.create({
     padding: scale(16),
     borderRadius: scale(12),
     marginBottom: scale(12),
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.05)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(1) },
+        shadowOpacity: 0.05,
+        shadowRadius: scale(2),
+        elevation: 1,
+      },
+    }),
   },
   iconContainer: {
     width: scale(40),
@@ -134,21 +155,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: scale(16),
+    fontSize: responsiveFontSize(16),
     fontWeight: '500',
     marginBottom: scale(2),
   },
   description: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
   },
   infoContainer: {
     marginTop: scale(8),
     padding: scale(12),
     borderRadius: scale(8),
-    backgroundColor: 'transparent',
   },
   infoText: {
-    fontSize: scale(13),
+    fontSize: responsiveFontSize(13),
     textAlign: 'center',
     opacity: 0.7,
   },

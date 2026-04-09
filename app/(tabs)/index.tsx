@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextStyle,
@@ -13,15 +12,15 @@ import {
 import Card from '../../components/Card/Card';
 import ProgressBar from '../../components/ProgressBar/ProgressBar';
 import StreakRestoreModal from '../../components/StreakRestoreModal/StreakRestoreModal';
-import { scale } from '../../constants/responsive';
+import PageContainer from '../../components/PageContainer/PageContainer';
+import { scale, responsiveFontSize } from '../../constants/responsive';
 import { useApp } from '../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 import { fetchTopics } from '../../services/mockData';
 import { Topic } from '../../types';
+import Skeleton from '../../components/Skeleton/Skeleton';
 
 type Styles = {
-  container: ViewStyle;
-  contentContainer: ViewStyle;
   header: ViewStyle;
   greeting: TextStyle;
   subtitle: TextStyle;
@@ -107,15 +106,6 @@ const HomeScreen = () => {
     });
   }, [updateStreak]);
 
-  const handleTopicPress = (topicId: string) => {
-    console.log('Home: Topic pressed, navigating to:', topicId);
-    // Navigate to the dynamic topic page
-    router.push({
-      pathname: '/[topicId]/page',
-      params: { topicId },
-    } as any);
-  };
-
   const renderTopicCard = (topic: Topic) => {
     const progress = topic.totalLessons > 0 ? (topic.completedLessons / topic.totalLessons) : 0;
     const isCompleted = topic.completedLessons === topic.totalLessons;
@@ -161,7 +151,7 @@ const HomeScreen = () => {
           </View>
           <ProgressBar 
             progress={progress} 
-            height={8}
+            height={scale(8)}
             color={isCompleted ? '#4CAF50' : colors.primary}
             showLabel={false}
           />
@@ -172,17 +162,47 @@ const HomeScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
+      <PageContainer contentContainerStyle={{ paddingVertical: scale(24) }}>
+        {/* Header Skeleton */}
+        <View style={styles.header}>
+          <Skeleton width={scale(200)} height={scale(32)} style={{ marginBottom: scale(8) }} />
+          <Skeleton width={scale(150)} height={scale(16)} />
+        </View>
+
+        {/* Stats Skeleton */}
+        <View style={styles.statsContainer}>
+          {[1, 2, 3].map((i) => (
+            <Skeleton 
+              key={i}
+              style={styles.statCard} 
+              height={scale(80)} 
+              borderRadius={scale(12)} 
+            />
+          ))}
+        </View>
+
+        {/* Sections Skeleton */}
+        {[1, 2].map((section) => (
+          <View key={section} style={styles.section}>
+            <Skeleton width={scale(140)} height={scale(24)} style={{ marginBottom: scale(16) }} />
+            {[1, 2].map((card) => (
+              <Skeleton 
+                key={card}
+                style={styles.card} 
+                height={scale(120)} 
+                borderRadius={scale(16)} 
+              />
+            ))}
+          </View>
+        ))}
+      </PageContainer>
     );
   }
 
   return (
     <>
-      <ScrollView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={styles.contentContainer}
+      <PageContainer
+        contentContainerStyle={{ paddingVertical: scale(24) }}
         refreshControl={
           <RefreshControl 
             refreshing={isLoading} 
@@ -241,7 +261,7 @@ const HomeScreen = () => {
             .filter(topic => !topic.isLocked)
             .map(renderTopicCard)}
         </View>
-      </ScrollView>
+      </PageContainer>
 
       {/* Streak Restore Modal */}
       <StreakRestoreModal
@@ -267,12 +287,12 @@ const styles = StyleSheet.create<Styles>({
     marginBottom: scale(24),
   },
   greeting: {
-    fontSize: scale(28),
+    fontSize: responsiveFontSize(28),
     fontWeight: 'bold',
     marginBottom: scale(4),
   },
   subtitle: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
     opacity: 0.8,
   },
   statsContainer: {
@@ -287,19 +307,19 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: scale(20),
+    fontSize: responsiveFontSize(20),
     fontWeight: 'bold',
     marginBottom: scale(4),
   },
   statLabel: {
-    fontSize: scale(12),
+    fontSize: responsiveFontSize(12),
     opacity: 0.8,
   },
   section: {
     marginBottom: scale(24),
   },
   sectionTitle: {
-    fontSize: scale(18),
+    fontSize: responsiveFontSize(18),
     fontWeight: '600',
     marginBottom: scale(12),
   },
@@ -317,12 +337,12 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
   },
   topicTitle: {
-    fontSize: scale(16),
+    fontSize: responsiveFontSize(16),
     fontWeight: '600',
     marginBottom: scale(4),
   },
   topicCategory: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
     opacity: 0.7,
   },
   progressContainer: {
@@ -334,10 +354,10 @@ const styles = StyleSheet.create<Styles>({
     marginBottom: scale(8),
   },
   progressText: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
   },
   xpText: {
-    fontSize: scale(12),
+    fontSize: responsiveFontSize(12),
     fontWeight: '600',
   },
 });

@@ -1,15 +1,16 @@
 import { StyleSheet } from 'react-native';
+import { scale, responsiveFontSize } from '../../constants/responsive';
 
 export default StyleSheet.create({
   button: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12, // From design-tokens.json
+    paddingVertical: scale(14),
+    paddingHorizontal: scale(16),
+    borderRadius: scale(12), // Scaled
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 120,
-    minHeight: 48, // Ensuring touch target >= 44x44 dp
+    minWidth: scale(120),
+    minHeight: scale(48), // Ensuring touch target >= 44x44 dp
   },
   primaryButton: {
     // Background color handled in component using tokens
@@ -19,7 +20,7 @@ export default StyleSheet.create({
   },
   label: {
     color: '#FFFFFF',
-    fontSize: 16, // From design-tokens.json (BODY)
+    fontSize: responsiveFontSize(16), // From design-tokens.json (BODY)
     fontWeight: '700',
     textAlign: 'center',
   },

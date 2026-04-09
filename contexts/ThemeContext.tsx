@@ -74,9 +74,10 @@ export const getThemeColors = (isDark: boolean) => {
     text: isDark ? '#FFFFFF' : '#212529',
     border: isDark ? '#333333' : '#E9ECEF',
     notification: isDark ? '#FF3B30' : '#FF3B30',
-    primary: isDark ? '#BB86FC' : '#6200EE',
-    primaryVariant: isDark ? '#3700B3' : '#3700B3',
+    primary: isDark ? '#0B6FFF' : '#0B6FFF', // Updated to match tokens
+    primaryVariant: isDark ? '#0056D2' : '#0056D2',
     secondary: isDark ? '#03DAC6' : '#03DAC6',
+    accent: isDark ? '#FFB84D' : '#FFB84D', // Added accent color from tokens
     error: isDark ? '#CF6679' : '#B00020',
     surface: isDark ? '#1E1E1E' : '#FFFFFF',
     onSurface: isDark ? '#FFFFFF' : '#000000',

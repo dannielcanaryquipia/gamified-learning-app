@@ -281,6 +281,76 @@ Programming is the process of creating instructions that tell a computer what to
   }
 ];
 
+// Networking Basics Lessons
+const networkingBasicsLessons: Lesson[] = [
+  {
+    id: 'intro-to-ip',
+    title: 'Understanding IP Addresses',
+    description: 'Learn how every device on the internet is identified.',
+    duration: 5,
+    isCompleted: false,
+    xp: 50,
+    order: 1,
+    content: `# Introduction
+Every device connected to a network needs a unique identifier, much like your home has a physical mailing address. This is where the **Internet Protocol (IP)** address comes in.
+
+# Key Concepts
+- **Uniqueness:** No two devices on the same network can share an IP address.
+- **Versions:** 
+    - **IPv4:** The older, 32-bit standard (e.g., \`192.168.1.1\`).
+    - **IPv6:** The modern, 128-bit standard created to handle the billions of devices today (e.g., \`2001:0db8:85a3:0000:0000:8a2e:0370:7334\`).
+- **Static vs Dynamic:** Some IPs stay the same (Static), while others change every time you connect (Dynamic).
+
+# Example
+Imagine you are sending a letter. The **IP address** is the address on the envelope that tells the post office exactly where the data (the letter) should be delivered.`
+  },
+  {
+    id: 'dns-basics',
+    title: 'DNS: The Phonebook of the Internet',
+    description: 'How names like google.com become IP addresses.',
+    duration: 7,
+    isCompleted: false,
+    xp: 60,
+    order: 2,
+    content: `# Introduction
+When you type \`google.com\` into your browser, your computer doesn't actually know where that is. Computers communicate using IP addresses (numbers). The **Domain Name System (DNS)** is what translates human-friendly names into computer-friendly numbers.
+
+# Key Concepts
+- **Nameservers:** Hierarchical servers that hold the records for domains.
+- **Caching:** Saving DNS results locally to speed up future requests.
+- **Record Types:**
+    - **A Record:** Points to an IPv4 address.
+    - **AAAA Record:** Points to an IPv6 address.
+    - **CNAME:** An alias that points one domain to another.
+
+# Example
+Think of DNS like the Contacts app on your phone. You look up "Alice" (the domain name), and your phone finds her phone number (the IP address) to make the call.`
+  },
+  {
+    id: 'port-numbers',
+    title: 'Ports: The Doors to Your Device',
+    description: 'Understanding how data finds the right application.',
+    duration: 4,
+    isCompleted: false,
+    xp: 40,
+    order: 3,
+    content: `# Introduction
+If an IP address is like the address of an apartment building, a **Port Number** is like the specific apartment number. It tells the incoming data which program or "door" it should enter.
+
+# Key Concepts
+- **Standard Ports:**
+    - **HTTP:** Port 80
+    - **HTTPS:** Port 443
+    - **SSH:** Port 22
+    - **FTP:** Port 21
+- **Range:** Port numbers range from 0 to 65535.
+- **Security:** Firewalls often block unused ports to prevent unauthorized access.
+
+# Example
+Your computer might be running a web browser, a chat app, and a music player all at once. The **Port Number** ensures that the web page data goes to the browser and not the music player.`
+  }
+];
+
 // Topics
 export const mockTopics: Topic[] = [
   {
@@ -326,6 +396,21 @@ export const mockTopics: Topic[] = [
     lastAccessed: new Date(),
     lessons: programmingBasicsLessons,
     totalXp: programmingBasicsLessons.reduce((sum, lesson) => sum + lesson.xp, 0),
+    currentXp: 0
+  },
+  {
+    id: 'networking-basics',
+    title: 'Networking Basics',
+    description: 'Dive into URLs, IP addresses, DNS, and more.',
+    icon: 'router',
+    totalLessons: networkingBasicsLessons.length,
+    completedLessons: 0,
+    xp: 0,
+    category: 'Networking',
+    isLocked: false,
+    lastAccessed: new Date(),
+    lessons: networkingBasicsLessons,
+    totalXp: networkingBasicsLessons.reduce((sum, lesson) => sum + lesson.xp, 0),
     currentXp: 0
   }
 ];

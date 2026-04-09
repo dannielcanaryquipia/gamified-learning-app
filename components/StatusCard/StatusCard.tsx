@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
-import { scale } from '../../constants/responsive';
+import { scale, responsiveFontSize } from '../../constants/responsive';
 import Card from '../Card/Card';
 
 type StatusCardProps = {
@@ -48,18 +48,20 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(4),
     padding: scale(12),
     alignItems: 'center',
+    borderRadius: scale(12),
   },
   iconContainer: {
     marginBottom: scale(4),
   },
   statValue: {
-    fontSize: scale(20),
+    fontSize: responsiveFontSize(18),
     fontWeight: 'bold',
-    marginBottom: scale(4),
+    marginBottom: scale(2),
   },
   statLabel: {
-    fontSize: scale(12),
+    fontSize: responsiveFontSize(12),
     opacity: 0.8,
+    textAlign: 'center',
   },
 });
 

@@ -2,11 +2,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import StatusCard from '../../components/StatusCard/StatusCard';
-import { scale } from '../../constants/responsive';
+import { scale, responsiveFontSize } from '../../constants/responsive';
 import { useApp } from '../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
+import PageContainer from '../../components/PageContainer/PageContainer';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -43,7 +44,6 @@ export default function ProfileScreen() {
     },
   ];
 
-  // Define the type for menu items
   type MenuItem = {
     icon: React.ComponentProps<typeof MaterialIcons>['name'];
     label: string;
@@ -79,15 +79,12 @@ export default function ProfileScreen() {
 
   const pickImage = async () => {
     try {
-      // Request permission first
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
       if (status !== 'granted') {
         Alert.alert('Permission required', 'Please allow access to your photo library to upload an image.');
         return;
       }
 
-      // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -98,13 +95,8 @@ export default function ProfileScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedImage = result.assets[0];
         setLocalAvatar(selectedImage.uri);
-        
-        // Update the user profile with the new avatar
         if (updateUserProfile) {
-          updateUserProfile({ 
-            ...userProfile, 
-            avatar: selectedImage.uri 
-          });
+          updateUserProfile({ ...userProfile, avatar: selectedImage.uri });
         }
       }
     } catch (error) {
@@ -126,123 +118,74 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView>
-        {/* Header Section */}
-        <View style={[styles.header, { backgroundColor: colors.card }]}>
-          <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
-            <View style={{ width: 24 }} />
-          </View>
-          <View style={styles.avatarContainer}>
-            <Image 
-              source={{ 
-                uri: localAvatar || 'https://via.placeholder.com/120?text=No+Image'
-              }} 
-              style={[
-                styles.avatar, 
-                { 
-                  borderColor: colors.primary,
-                  backgroundColor: isDark ? '#333' : '#f0f0f0'
-                }
-              ]} 
-              onError={({ nativeEvent: { error } }) => {
-                console.log('Image loading error:', error);
-                // Set a default avatar if the image fails to load
-                setLocalAvatar('https://via.placeholder.com/120?text=No+Image');
-              }}
-            />
-            <TouchableOpacity 
-              style={[
-                styles.editButton, 
-                { 
-                  backgroundColor: colors.primary,
-                  borderColor: colors.background
-                }
-              ]}
-              onPress={pickImage}
-            >
-              <MaterialIcons name="edit" size={16} color="#FFF" />
-            </TouchableOpacity>
-          </View>
-          
-          <TouchableOpacity onPress={handleNamePress}>
-            <View style={styles.nameContainer}>
-              <Text style={[styles.userName, { color: colors.text }]}>
-                {userProfile?.name || 'Guest User'}
-              </Text>
-              <MaterialIcons 
-                name="edit" 
-                size={16} 
-                color={colors.primary} 
-                style={styles.editNameIcon}
-              />
-            </View>
+    <PageContainer
+      scrollable={true}
+      contentContainerStyle={styles.contentContainer}
+    >
+      {/* Header Section */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
+      </View>
+
+      <View style={styles.profileInfo}>
+        <View style={styles.avatarContainer}>
+          <Image 
+            source={{ uri: localAvatar || 'https://via.placeholder.com/120?text=No+Image' }} 
+            style={[styles.avatar, { borderColor: colors.primary, backgroundColor: isDark ? '#333' : '#f0f0f0' }]} 
+            onError={() => setLocalAvatar('https://via.placeholder.com/120?text=No+Image')}
+          />
+          <TouchableOpacity 
+            style={[styles.editButton, { backgroundColor: colors.primary, borderColor: colors.background }]}
+            onPress={pickImage}
+          >
+            <MaterialIcons name="edit" size={scale(16)} color="#FFF" />
           </TouchableOpacity>
         </View>
+        
+        <TouchableOpacity onPress={handleNamePress} style={styles.nameSection}>
+          <View style={styles.nameContainer}>
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {userProfile?.name || 'Guest User'}
+            </Text>
+            <MaterialIcons name="edit" size={scale(18)} color={colors.primary} style={styles.editNameIcon} />
+          </View>
+        </TouchableOpacity>
+      </View>
 
-        {/* Stats Section */}
-        <View style={styles.statsContainer}>
-          {stats.map((stat) => (
-            <StatusCard
-              key={stat.label}
-              value={stat.value}
-              label={stat.label}
-              color={stat.color}
-              backgroundColor={stat.bgColor}
-              icon={
-                <MaterialIcons 
-                  name={stat.icon as any} 
-                  size={24} 
-                  color={stat.color} 
-                />
-              }
-            />
-          ))}
-        </View>
+      {/* Stats Section */}
+      <View style={styles.statsContainer}>
+        {stats.map((stat) => (
+          <StatusCard
+            key={stat.label}
+            value={stat.value}
+            label={stat.label}
+            color={stat.color}
+            backgroundColor={stat.bgColor}
+            icon={<MaterialIcons name={stat.icon as any} size={scale(24)} color={stat.color} />}
+          />
+        ))}
+      </View>
 
-        {/* Menu Section */}
-        <View style={[styles.menuContainer, { backgroundColor: colors.card }]}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity 
-              key={item.label}
-              style={[
-                styles.menuItem,
-                index !== menuItems.length - 1 && { 
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.border || '#f0f0f0'
-                }
-              ]}
-              onPress={item.onPress}
-            >
-              <View style={styles.menuItemContent}>
-                <View style={styles.menuIconContainer}>
-                  <MaterialIcons 
-                    name={item.icon} 
-                    size={24} 
-                    color={item.iconColor || colors.primary} 
-                  />
-                </View>
-                <Text style={[
-                  styles.menuText, 
-                  { color: item.labelStyle?.color || colors.text }
-                ]}>
-                  {item.label}
-                </Text>
+      {/* Menu Section */}
+      <View style={[styles.menuContainer, { backgroundColor: colors.card, borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+        {menuItems.map((item, index) => (
+          <TouchableOpacity 
+            key={item.label}
+            style={[styles.menuItem, index !== menuItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}
+            onPress={item.onPress}
+          >
+            <View style={styles.menuItemContent}>
+              <View style={styles.menuIconContainer}>
+                <MaterialIcons name={item.icon} size={scale(24)} color={item.iconColor || colors.primary} />
               </View>
-              <MaterialIcons 
-                name="keyboard-arrow-right" 
-                size={24} 
-                color={colors.text} 
-                opacity={0.5}
-              />
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+              <Text style={[styles.menuText, { color: item.labelStyle?.color || colors.text }]}>
+                {item.label}
+              </Text>
+            </View>
+            <MaterialIcons name="keyboard-arrow-right" size={scale(24)} color={colors.placeholder} />
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Name Edit Modal */}
       <Modal
@@ -251,19 +194,22 @@ export default function ProfileScreen() {
         animationType="fade"
         onRequestClose={() => setIsEditingName(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setIsEditingName(false)}
+        >
+          <TouchableOpacity 
+            activeOpacity={1} 
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
             <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Name</Text>
             <TextInput
-              style={[styles.nameInput, { 
-                color: colors.text, 
-                borderColor: colors.border || '#cccccc',
-                backgroundColor: colors.background
-              }]}
+              style={[styles.nameInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
               value={editedName}
               onChangeText={setEditedName}
               placeholder="Enter your name"
-              placeholderTextColor={colors.text + '80'}
+              placeholderTextColor={colors.placeholder}
               autoFocus
               onSubmitEditing={handleSaveName}
             />
@@ -272,66 +218,53 @@ export default function ProfileScreen() {
                 style={[styles.modalButton, { borderColor: colors.border }]}
                 onPress={() => setIsEditingName(false)}
               >
-                <Text style={[styles.modalButtonText, { color: colors.text }]}>
-                  Cancel
-                </Text>
+                <Text style={[styles.modalButtonText, { color: colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.modalButton, { backgroundColor: colors.primary }]}
+                style={[styles.modalButton, { backgroundColor: colors.primary, borderBlockColor: colors.primary }]}
                 onPress={handleSaveName}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
-    </View>
+    </PageContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  contentContainer: {
+    paddingBottom: scale(40),
   },
   header: {
-    padding: scale(24),
-    paddingBottom: scale(16),
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 2,
-  },
-  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: scale(20),
+    paddingVertical: scale(20),
+    borderBottomWidth: 1,
+    position: 'relative',
+    marginBottom: scale(24),
   },
   headerTitle: {
-    fontSize: scale(20),
+    fontSize: responsiveFontSize(20),
     fontWeight: 'bold',
-    textAlign: 'center',
     flex: 1,
+    textAlign: 'center',
   },
-  backButton: {
-    padding: scale(4),
-    marginLeft: -scale(4),
+  profileInfo: {
+    alignItems: 'center',
+    marginBottom: scale(32),
   },
   avatarContainer: {
     position: 'relative',
-    alignSelf: 'center',
     marginBottom: scale(16),
-    width: scale(120),
-    height: scale(120),
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   avatar: {
     width: scale(120),
     height: scale(120),
     borderRadius: scale(60),
     borderWidth: 3,
-    resizeMode: 'cover',
   },
   editButton: {
     position: 'absolute',
@@ -343,47 +276,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    elevation: 3,
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
+      default: {
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+      },
+    }),
+  },
+  nameSection: {
+    paddingHorizontal: scale(16),
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   userName: {
-    fontSize: scale(24),
+    fontSize: responsiveFontSize(24),
     fontWeight: 'bold',
-    marginBottom: scale(4),
     textAlign: 'center',
   },
-  userEmail: {
-    fontSize: scale(14),
-    textAlign: 'center',
+  editNameIcon: {
+    marginLeft: scale(8),
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    margin: scale(16),
-    marginBottom: scale(24),
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: scale(12),
-    borderRadius: 12,
-    elevation: 2,
-  },
-  statValue: {
-    fontSize: scale(18),
-    fontWeight: 'bold',
-    marginVertical: scale(4),
-  },
-  statLabel: {
-    fontSize: scale(12),
-    textAlign: 'center',
+    marginBottom: scale(32),
+    gap: scale(12),
   },
   menuContainer: {
-    margin: scale(16),
-    borderRadius: 12,
+    borderRadius: scale(16),
     overflow: 'hidden',
-    elevation: 2,
+    borderWidth: 1,
   },
   menuItem: {
     padding: scale(16),
@@ -400,16 +331,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuText: {
-    fontSize: scale(16),
-    marginLeft: scale(16),
-  },
-  nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  editNameIcon: {
-    marginLeft: scale(8),
+    fontSize: responsiveFontSize(16),
+    marginLeft: scale(12),
   },
   modalOverlay: {
     flex: 1,
@@ -420,37 +343,49 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
-    padding: scale(20),
-    borderRadius: scale(12),
-    elevation: 5,
+    maxWidth: scale(400),
+    padding: scale(24),
+    borderRadius: scale(20),
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)',
+      },
+      default: {
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+    }),
   },
   modalTitle: {
-    fontSize: scale(18),
+    fontSize: responsiveFontSize(20),
     fontWeight: 'bold',
-    marginBottom: scale(16),
+    marginBottom: scale(20),
     textAlign: 'center',
   },
   nameInput: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: scale(12),
-    fontSize: scale(16),
-    marginBottom: scale(20),
+    borderRadius: scale(12),
+    padding: scale(14),
+    fontSize: responsiveFontSize(16),
+    marginBottom: scale(24),
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: scale(12),
   },
   modalButton: {
     flex: 1,
-    padding: scale(12),
-    borderRadius: 8,
+    padding: scale(14),
+    borderRadius: scale(12),
     alignItems: 'center',
-    marginHorizontal: scale(5),
     borderWidth: 1,
   },
   modalButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(16),
+    fontWeight: '600',
   },
 });

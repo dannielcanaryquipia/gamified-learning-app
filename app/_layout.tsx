@@ -6,6 +6,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider } from '../contexts/AppContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 
@@ -65,11 +66,13 @@ export default function RootLayout() {
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <ThemeProvider>
-        <AppProvider>
-          <RootLayoutNav />
-        </AppProvider>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppProvider>
+            <RootLayoutNav />
+          </AppProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
     </View>
   );
 }
@@ -83,12 +86,9 @@ function RootLayoutNav() {
       animation: 'fade',
     }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="computer-basics/page" options={{ headerShown: false }} />
-      <Stack.Screen name="computer-basics/[lessonId]/page" options={{ headerShown: false }} />
-      <Stack.Screen name="internet-basics/page" options={{ headerShown: false }} />
-      <Stack.Screen name="internet-basics/[lessonId]/page" options={{ headerShown: false }} />
-      <Stack.Screen name="programming-basics/page" options={{ headerShown: false }} />
-      <Stack.Screen name="programming-basics/[lessonId]/page" options={{ headerShown: false }} />
+      <Stack.Screen name="[topicId]/page" options={{ headerShown: false }} />
+      <Stack.Screen name="[topicId]/[lessonId]/page" options={{ headerShown: false }} />
+      <Stack.Screen name="lessons/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="help-support" options={{ headerShown: false }} />
       <Stack.Screen name="about" options={{ headerShown: false }} />

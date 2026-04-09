@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { scale } from '../../constants/responsive';
+import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors } from '../../contexts/ThemeContext';
 
 interface StreakRestoreModalProps {
@@ -35,7 +35,7 @@ const StreakRestoreModal: React.FC<StreakRestoreModalProps> = ({
               🔥 Keep Your Streak Alive!
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color={colors.text} />
+              <MaterialIcons name="close" size={scale(24)} color={colors.text} />
             </TouchableOpacity>
           </View>
           
@@ -90,9 +90,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: scale(16),
     padding: scale(20),
-    maxWidth: 400,
+    maxWidth: scale(400),
   },
   header: {
     flexDirection: 'row',
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: scale(20),
   },
   title: {
-    fontSize: scale(20),
+    fontSize: responsiveFontSize(20),
     fontWeight: 'bold',
     flex: 1,
   },
@@ -113,31 +113,31 @@ const styles = StyleSheet.create({
     marginVertical: scale(20),
   },
   streakCount: {
-    fontSize: scale(48),
+    fontSize: responsiveFontSize(48),
     fontWeight: 'bold',
   },
   streakLabel: {
-    fontSize: scale(16),
+    fontSize: responsiveFontSize(16),
     marginTop: scale(4),
   },
   message: {
-    fontSize: scale(16),
+    fontSize: responsiveFontSize(16),
     textAlign: 'center',
     marginBottom: scale(24),
-    lineHeight: scale(24),
+    lineHeight: responsiveFontSize(24),
   },
   buttonContainer: {
     width: '100%',
   },
   button: {
     padding: scale(16),
-    borderRadius: 12,
+    borderRadius: scale(12),
     alignItems: 'center',
     marginBottom: scale(12),
   },
   buttonText: {
     color: 'white',
-    fontSize: scale(16),
+    fontSize: responsiveFontSize(16),
     fontWeight: '600',
   },
   secondaryButton: {
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
-    fontSize: scale(14),
+    fontSize: responsiveFontSize(14),
     fontWeight: '500',
   },
 });

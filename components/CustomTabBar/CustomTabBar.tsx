@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, getThemeColors } from '../../contexts/ThemeContext';
 import { scale, getScreenDimensions } from '../../constants/responsive';
 
@@ -13,6 +14,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
   const { isTablet, isDesktop, width: screenWidth } = getScreenDimensions();
+  const insets = useSafeAreaInsets();
   const isWide = isTablet || isDesktop;
 
   // Proportionally calculate widths for different screens
@@ -39,7 +41,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
         marginLeft: -(tabBarWidth / 2),
         height: tabBarHeight,
         borderRadius: tabBarHeight / 2,
-        bottom: isWide ? 30 : scale(24),
+        bottom: Math.max(insets.bottom, isWide ? 30 : scale(20)),
         ...Platform.select({
           web: {
             boxShadow: isDark 

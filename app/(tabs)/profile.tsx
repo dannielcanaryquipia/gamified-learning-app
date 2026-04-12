@@ -3,11 +3,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import PageContainer from '../../components/PageContainer/PageContainer';
 import StatusCard from '../../components/StatusCard/StatusCard';
-import { scale, responsiveFontSize } from '../../constants/responsive';
+import { responsiveFontSize, scale } from '../../constants/responsive';
 import { useApp } from '../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import PageContainer from '../../components/PageContainer/PageContainer';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -130,9 +130,8 @@ export default function ProfileScreen() {
       <View style={styles.profileInfo}>
         <View style={styles.avatarContainer}>
           <Image 
-            source={{ uri: localAvatar || 'https://via.placeholder.com/120?text=No+Image' }} 
-            style={[styles.avatar, { borderColor: colors.primary, backgroundColor: isDark ? '#333' : '#f0f0f0' }]} 
-            onError={() => setLocalAvatar('https://via.placeholder.com/120?text=No+Image')}
+            source={{ uri: localAvatar }} 
+            style={[styles.avatar, { borderColor: colors.primary, backgroundColor: isDark ? '#333' : '#f0f0f0' }]}
           />
           <TouchableOpacity 
             style={[styles.editButton, { backgroundColor: colors.primary, borderColor: colors.background }]}

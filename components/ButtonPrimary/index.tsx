@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-  TouchableOpacityProps
+    ActivityIndicator,
+    Text,
+    TouchableOpacity,
+    TouchableOpacityProps
 } from 'react-native';
-import { useTheme, getThemeColors } from '../../contexts/ThemeContext';
+import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 import styles from './styles';
 
 interface ButtonPrimaryProps extends TouchableOpacityProps {
@@ -40,7 +40,7 @@ const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
         variant === 'secondary' ? styles.secondaryButton : styles.primaryButton,
         {
           backgroundColor: isDisabled 
-            ? (isDark ? '#333' : '#ccc') 
+            ? colors.disabled
             : (variant === 'secondary' ? colors.accent : colors.primary),
         },
         style,
@@ -52,7 +52,7 @@ const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color="#FFFFFF" size="small" />
+        <ActivityIndicator color={colors.white} size="small" />
       ) : (
         <Text style={styles.label}>
           {label}

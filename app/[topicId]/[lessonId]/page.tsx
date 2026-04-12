@@ -1,15 +1,17 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View, Platform } from 'react-native';
 import { useApp } from '../../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../../contexts/ThemeContext';
 import { fetchTopics } from '../../../services/mockData';
 import { Lesson } from '../../../types';
 import PageContainer from '../../../components/PageContainer/PageContainer';
 import LessonContent from '../../../components/LessonContent/LessonContent';
+import LoadingOverlay from '../../../components/LoadingOverlay/LoadingOverlay';
 import Skeleton from '../../../components/Skeleton/Skeleton';
 import { scale, responsiveFontSize, getScreenDimensions } from '../../../constants/responsive';
+import { useLoadingOverlay } from '../../../hooks/useLoadingOverlay';
 
 export default function NestedLessonScreen() {
   const { isDark } = useTheme();
@@ -17,6 +19,7 @@ export default function NestedLessonScreen() {
   const router = useRouter();
   const { topicId, lessonId } = useLocalSearchParams<{ topicId: string; lessonId: string }>();
   const { markLessonComplete } = useApp();
+  const { isLoading: isRedirecting, showLoading, hideLoading } = useLoadingOverlay();
   
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [topicTitle, setTopicTitle] = useState<string>('');
@@ -63,7 +66,7 @@ export default function NestedLessonScreen() {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
   }, [isLoading, lesson, isWideScreen]);
@@ -84,31 +87,34 @@ export default function NestedLessonScreen() {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     } else if (!isCloseToBottom && isAtBottom && !isCompleted) {
       setIsAtBottom(false);
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
   };
 
   const handleMarkAsCompleted = async () => {
-    if (!topicId || !lessonId || isCompleted) return;
+    if (!topicId || !lessonId || isCompleted || isRedirecting) return;
     
     try {
-      setIsCompleted(true);
+      showLoading('Marking lesson complete...');
       await markLessonComplete(topicId, lessonId);
+      setIsCompleted(true);
       
       setTimeout(() => {
+        hideLoading();
         router.back();
       }, 1500);
     } catch (error) {
       console.error('Error completing lesson:', error);
       setIsCompleted(false);
+      hideLoading();
     }
   };
 
@@ -155,41 +161,45 @@ export default function NestedLessonScreen() {
   }
 
   return (
-    <PageContainer
-      scrollable={true}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-    >
-      <View style={styles.header}>
-        <MaterialIcons 
-          name="arrow-back" 
-          size={scale(24)} 
-          color={colors.text} 
-          onPress={handleBack}
-          style={styles.backButton}
-        />
-        <View style={styles.headerContent}>
-          <Text style={[styles.title, { color: colors.text }]}>{lesson.title}</Text>
-          <View style={styles.meta}>
-            <Text style={[styles.duration, { color: colors.text }]}>
-              <MaterialIcons name="schedule" size={scale(14)} /> {lesson.duration} min
-            </Text>
-            <Text style={[styles.xp, { color: colors.primary }]}>
-              <MaterialIcons name="star" size={scale(14)} /> {lesson.xp} XP
-            </Text>
+    <>
+      <LoadingOverlay visible={isRedirecting} message="Marking lesson complete..." />
+      <PageContainer
+        scrollable={true}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        <View style={styles.header}>
+          <MaterialIcons 
+            name="arrow-back" 
+            size={scale(24)} 
+            color={colors.text} 
+            onPress={handleBack}
+            style={styles.backButton}
+          />
+          <View style={styles.headerContent}>
+            <Text style={[styles.title, { color: colors.text }]}>{lesson.title}</Text>
+            <View style={styles.meta}>
+              <Text style={[styles.duration, { color: colors.text }]}>
+                <MaterialIcons name="schedule" size={scale(14)} /> {lesson.duration} min
+              </Text>
+              <Text style={[styles.xp, { color: colors.primary }]}>
+                <MaterialIcons name="star" size={scale(14)} /> {lesson.xp} XP
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <LessonContent 
-        content={lesson.content}
-        description={lesson.description}
-        isCompleted={isCompleted}
-        onComplete={handleMarkAsCompleted}
-        showCompleteButton={isAtBottom || isCompleted}
-        fadeAnim={fadeAnim}
-      />
-    </PageContainer>
+        <LessonContent 
+          content={lesson.content}
+          description={lesson.description}
+          isCompleted={isCompleted}
+          isLoading={isRedirecting}
+          onComplete={handleMarkAsCompleted}
+          showCompleteButton={isAtBottom || isCompleted}
+          fadeAnim={fadeAnim}
+        />
+      </PageContainer>
+    </>
   );
 }
 

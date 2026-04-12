@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform, View, ViewStyle } from 'react-native';
-import { scale, getScreenDimensions } from '../../constants/responsive';
+import { useResponsive } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 
 interface FloatingTabBarProps {
@@ -16,7 +16,7 @@ interface FloatingTabBarProps {
 const FloatingTabBarContainer: React.FC<FloatingTabBarProps> = ({ isVisible, children, style }) => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
-  const { isTablet, isDesktop } = getScreenDimensions();
+  const { isTablet, isDesktop, scale } = useResponsive();
   const isWide = isTablet || isDesktop;
 
   if (!isVisible) return null;
@@ -57,9 +57,6 @@ const FloatingTabBarContainer: React.FC<FloatingTabBarProps> = ({ isVisible, chi
 const styles = {
   container: {
     position: 'absolute' as const,
-    bottom: scale(20),
-    height: scale(64),
-    borderRadius: scale(32),
     borderTopWidth: 0,
     overflow: 'hidden' as const,
     flexDirection: 'row' as const,

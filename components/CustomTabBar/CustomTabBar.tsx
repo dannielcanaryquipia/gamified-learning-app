@@ -4,7 +4,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, getThemeColors } from '../../contexts/ThemeContext';
-import { scale, getScreenDimensions } from '../../constants/responsive';
+import { useResponsive } from '../../constants/responsive';
 
 /**
  * A completely custom, floating, pill-shaped tab bar component.
@@ -13,14 +13,10 @@ import { scale, getScreenDimensions } from '../../constants/responsive';
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
-  const { isTablet, isDesktop, width: screenWidth } = getScreenDimensions();
+  const { width: screenWidth, isTablet, isDesktop, scale, isPortrait } = useResponsive();
   const insets = useSafeAreaInsets();
   const isWide = isTablet || isDesktop;
 
-  // Proportionally calculate widths for different screens
-  // For web/wide screens, we use more conservative scaling
-  const responsiveScale = (size: number) => isWide ? size * 1.1 : scale(size);
-  
   const tabBarWidth = isWide 
     ? Math.min(320, screenWidth * 0.3) // Much smaller on desktop
     : screenWidth * 0.85; 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View, ViewStyle } from 'react-native';
-import { useTheme, getThemeColors } from '../../contexts/ThemeContext';
+import { Animated, ViewStyle, Platform } from 'react-native';
 import { scale } from '../../constants/responsive';
+import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 
 interface SkeletonProps {
   width?: number | string;
@@ -28,12 +28,12 @@ const Skeleton: React.FC<SkeletonProps> = ({
         Animated.timing(opacity, {
           toValue: 0.7,
           duration: 800,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(opacity, {
           toValue: 0.3,
           duration: 800,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     );
@@ -47,7 +47,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
     width: width as any,
     height: height as any,
     borderRadius: variant === 'circle' ? (typeof height === 'number' ? height / 2 : scale(50)) : borderRadius,
-    backgroundColor: isDark ? '#2c2c2e' : '#e1e1e1',
+    backgroundColor: colors.skeletonBackground,
   };
 
   return (

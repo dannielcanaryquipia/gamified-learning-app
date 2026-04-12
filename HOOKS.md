@@ -39,6 +39,15 @@ Document custom hooks, their contracts, side effects, and usage patterns.
 - `toggleTheme()`
 - `reducedMotion: boolean`
 
+### useOrientation
+**Purpose**: Track device orientation and auto-rotate state.  
+**API**:
+- `orientation: 'portrait' | 'landscape'`
+- `isLandscape: boolean`
+- `isPortrait: boolean`
+- `width: number`
+- `height: number`
+
 ## Testing hooks
 - Use `renderHook` from React Testing Library for unit tests.
 - Mock AsyncStorage and network calls for persistence hooks.

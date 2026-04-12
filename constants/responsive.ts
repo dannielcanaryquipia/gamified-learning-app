@@ -1,4 +1,4 @@
-import { Dimensions, Platform, ScaledSize } from 'react-native';
+import { Dimensions, Platform, ScaledSize, useWindowDimensions } from 'react-native';
 
 // Base dimensions which are used by getSize function
 export const BASE_WIDTH = 375;
@@ -14,6 +14,50 @@ export const BREAKPOINTS = {
 export const isWeb = Platform.OS === 'web';
 export const isIOS = Platform.OS === 'ios';
 export const isAndroid = Platform.OS === 'android';
+
+/**
+ * Hook to provide reactive screen dimensions and helpers.
+ * Ensures components re-render when the device orientation changes.
+ */
+export const useResponsive = () => {
+  const { width, height } = useWindowDimensions();
+
+  const isPortraitMode = height >= width;
+  const isTabletDevice = width >= BREAKPOINTS.TABLET || (height / width) < 1.6;
+  const isDesktopDevice = width >= BREAKPOINTS.DESKTOP;
+
+  return {
+    width,
+    height,
+    isPortrait: isPortraitMode,
+    isLandscape: !isPortraitMode,
+    isTablet: isTabletDevice,
+    isDesktop: isDesktopDevice,
+    isWeb,
+    isIOS,
+    isAndroid,
+    scale: (size: number) => {
+      let effectiveWidth = Math.min(Math.max(width, 320), 480);
+      if (width >= BREAKPOINTS.DESKTOP) effectiveWidth = 375 * 1.35;
+      else if (width >= BREAKPOINTS.TABLET) effectiveWidth = 375 * 1.2;
+      return (effectiveWidth / BASE_WIDTH) * size;
+    },
+    verticalScale: (size: number) => {
+      const effectiveHeight = Math.min(Math.max(height, 568), 900);
+      return (effectiveHeight / BASE_HEIGHT) * size;
+    },
+    responsiveFontSize: (fontSize: number) => {
+      let scaleFactor = 1;
+      if (width >= BREAKPOINTS.DESKTOP) scaleFactor = 1.35;
+      else if (width >= BREAKPOINTS.TABLET) scaleFactor = 1.2;
+      else {
+        scaleFactor = width / BASE_WIDTH;
+        scaleFactor = Math.min(Math.max(scaleFactor, 0.94), 1.06);
+      }
+      return Math.round(fontSize * scaleFactor);
+    }
+  };
+};
 
 /**
  * Gets the effective width for scaling.

@@ -74,16 +74,22 @@ export const getThemeColors = (isDark: boolean) => {
     text: isDark ? '#FFFFFF' : '#212529',
     border: isDark ? '#333333' : '#E9ECEF',
     notification: isDark ? '#FF3B30' : '#FF3B30',
-    primary: isDark ? '#0B6FFF' : '#0B6FFF', // Updated to match tokens
+    primary: isDark ? '#0B6FFF' : '#0B6FFF',
     primaryVariant: isDark ? '#0056D2' : '#0056D2',
     secondary: isDark ? '#03DAC6' : '#03DAC6',
-    accent: isDark ? '#FFB84D' : '#FFB84D', // Added accent color from tokens
-    error: isDark ? '#CF6679' : '#B00020',
+    accent: isDark ? '#FFB84D' : '#FFB84D',
+    success: isDark ? '#2ECC71' : '#4CAF50',
+    error: isDark ? '#CF6679' : '#FF5252',
     surface: isDark ? '#1E1E1E' : '#FFFFFF',
     onSurface: isDark ? '#FFFFFF' : '#000000',
     disabled: isDark ? '#666666' : '#D1D5DB',
     placeholder: isDark ? '#A0A0A0' : '#9CA3AF',
     backdrop: isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.5)',
     modalOverlay: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.6)',
+    codeBackground: isDark ? '#2a2a2a' : '#f5f5f5',
+    trackBackground: isDark ? '#333333' : '#E0E0E0',
+    skeletonBackground: isDark ? '#2c2c2e' : '#e1e1e1',
+    shadow: '#000000',
+    white: '#FFFFFF',
   };
 };

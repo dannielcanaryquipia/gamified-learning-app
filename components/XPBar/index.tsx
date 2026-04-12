@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring 
+import { Text, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring
 } from 'react-native-reanimated';
-import { useTheme, getThemeColors } from '../../contexts/ThemeContext';
+import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 import styles from './styles';
 
 interface XPBarProps {
@@ -34,7 +34,7 @@ const XPBar: React.FC<XPBarProps> = ({
   return (
     <View style={styles.container}>
       {label && <Text style={[styles.label, { color: colors.text }]}>{label}</Text>}
-      <View style={[styles.track, { backgroundColor: isDark ? '#333' : '#E0E0E0' }]}>
+      <View style={[styles.track, { backgroundColor: colors.trackBackground }]}>
         <Animated.View 
           style={[
             styles.progress, 

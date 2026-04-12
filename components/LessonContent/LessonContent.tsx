@@ -1,15 +1,15 @@
 import React from 'react';
-import { StyleSheet, Text, View, ViewStyle, TouchableOpacity, Animated } from 'react-native';
+import { Animated, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import { MaterialIcons } from '@expo/vector-icons';
+import { responsiveFontSize, scale } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import { scale, responsiveFontSize } from '../../constants/responsive';
 import ButtonPrimary from '../ButtonPrimary';
 
 interface LessonContentProps {
   content: string;
   description?: string;
   isCompleted?: boolean;
+  isLoading?: boolean;
   onComplete?: () => void;
   showCompleteButton?: boolean;
   fadeAnim?: Animated.Value;
@@ -20,6 +20,7 @@ const LessonContent: React.FC<LessonContentProps> = ({
   content, 
   description,
   isCompleted,
+  isLoading,
   onComplete,
   showCompleteButton,
   fadeAnim,
@@ -66,13 +67,13 @@ const LessonContent: React.FC<LessonContentProps> = ({
           },
           code_inline: {
             color: colors.primary,
-            backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+            backgroundColor: colors.codeBackground,
             padding: scale(2),
             borderRadius: scale(4),
           },
           code_block: {
             color: colors.text,
-            backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+            backgroundColor: colors.codeBackground,
             padding: scale(12),
             borderRadius: scale(8),
             marginBottom: scale(12),
@@ -96,9 +97,10 @@ const LessonContent: React.FC<LessonContentProps> = ({
           <ButtonPrimary
             label={isCompleted ? 'Completed! ✨' : 'Mark as Complete'}
             onPress={onComplete}
-            disabled={!showCompleteButton && !isCompleted}
+            loading={isLoading}
+            disabled={(!showCompleteButton && !isCompleted) || isLoading}
             style={{ 
-              backgroundColor: isCompleted ? '#4CAF50' : colors.primary,
+              backgroundColor: isCompleted ? colors.success : colors.primary,
               width: '100%',
               maxWidth: scale(400)
             }}

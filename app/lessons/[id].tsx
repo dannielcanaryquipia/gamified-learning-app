@@ -1,17 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, StyleSheet, Text, View, Platform } from 'react-native';
 
+import LessonContent from '../../components/LessonContent/LessonContent';
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
+import PageContainer from '../../components/PageContainer/PageContainer';
+import Skeleton from '../../components/Skeleton/Skeleton';
+import { getScreenDimensions, responsiveFontSize, scale } from '../../constants/responsive';
 import { useApp } from '../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
+import { useLoadingOverlay } from '../../hooks/useLoadingOverlay';
 import { fetchTopics } from '../../services/mockData';
 import { Lesson } from '../../types';
-import ButtonPrimary from '../../components/ButtonPrimary';
-import PageContainer from '../../components/PageContainer/PageContainer';
-import LessonContent from '../../components/LessonContent/LessonContent';
-import Skeleton from '../../components/Skeleton/Skeleton';
-import { scale, responsiveFontSize, getScreenDimensions } from '../../constants/responsive';
 
 export default function LessonScreen() {
   const { isDark } = useTheme();
@@ -27,8 +28,34 @@ export default function LessonScreen() {
   const [contentHeight, setContentHeight] = useState(0);
   const [layoutHeight, setLayoutHeight] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { isLoading: isRedirecting, showLoading, hideLoading } = useLoadingOverlay();
   
   const { isDesktop: isWideScreen, isTablet: isTabletScreen } = getScreenDimensions();
+
+  const styles = StyleSheet.create({
+    loadingText: { textAlign: 'center', marginTop: scale(50), fontSize: responsiveFontSize(16) },
+    errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: scale(20) },
+    errorText: { fontSize: responsiveFontSize(18), marginTop: scale(16), textAlign: 'center' },
+    contentContainer: { 
+      paddingBottom: scale(60),
+    },
+    header: { 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      paddingVertical: scale(20), 
+      borderBottomWidth: 1, 
+      borderBottomColor: 'rgba(0,0,0,0.05)',
+      marginBottom: scale(16),
+    },
+    backButton: {
+      marginRight: scale(16),
+    },
+    title: { 
+      fontSize: responsiveFontSize(22), 
+      fontWeight: 'bold',
+      flex: 1,
+    },
+  });
 
   // If we're on a wide screen (Web/Tablet/Desktop), enable the button automatically
   // because content likely fits or the user can see everything easily.
@@ -44,7 +71,7 @@ export default function LessonScreen() {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 400,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
   }, [isAtBottom, isCompleted]);
@@ -104,17 +131,30 @@ export default function LessonScreen() {
   };
 
   const handleMarkAsCompleted = async () => {
-    if (!id || isCompleted || !lesson) return;
+    if (!id || isCompleted || !lesson || isRedirecting) return;
+    
     try {
-      setIsCompleted(true);
+      showLoading('Marking lesson complete...');
+      
       const topics = await fetchTopics();
       const topic = topics.find((t: any) => t.lessons?.some((l: any) => l.id === id));
+      
       if (topic) {
         await markLessonComplete(topic.id, id);
+        setIsCompleted(true);
+        
+        // Brief delay to let the user see the "Completed" state before navigating
+        setTimeout(() => {
+          hideLoading();
+          router.back();
+        }, 1500);
+      } else {
+        hideLoading();
       }
-      setTimeout(() => router.back(), 1500);
     } catch (error) {
+      console.error('Error marking lesson complete:', error);
       setIsCompleted(false);
+      hideLoading();
     }
   };
 
@@ -144,23 +184,25 @@ export default function LessonScreen() {
   if (!lesson) return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
       <View style={styles.errorContainer}>
-        <MaterialIcons name="error-outline" size={scale(48)} color="#FF5252" />
+        <MaterialIcons name="error-outline" size={scale(48)} color={colors.error} />
         <Text style={[styles.errorText, { color: colors.text }]}>Lesson not found</Text>
       </View>
     </View>
   );
 
   return (
-    <PageContainer
-      scrollable={true}
-      onScroll={handleScroll}
-      onLayout={handleLayoutChange}
-      onContentSizeChange={handleContentSizeChange}
-      scrollEventThrottle={16}
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <View style={styles.header}>
+    <>
+      <LoadingOverlay visible={isRedirecting} message="Marking lesson complete..." />
+      <PageContainer
+        scrollable={true}
+        onScroll={handleScroll}
+        onLayout={handleLayoutChange}
+        onContentSizeChange={handleContentSizeChange}
+        scrollEventThrottle={16}
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <View style={styles.header}>
         <MaterialIcons 
           name="arrow-back" 
           size={scale(24)} 
@@ -177,35 +219,12 @@ export default function LessonScreen() {
         content={lesson.content}
         description={lesson.description}
         isCompleted={isCompleted}
+        isLoading={isRedirecting}
         onComplete={handleMarkAsCompleted}
         showCompleteButton={isAtBottom || isCompleted}
         fadeAnim={fadeAnim}
       />
-    </PageContainer>
+      </PageContainer>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingText: { textAlign: 'center', marginTop: scale(50), fontSize: responsiveFontSize(16) },
-  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: scale(20) },
-  errorText: { fontSize: responsiveFontSize(18), marginTop: scale(16), textAlign: 'center' },
-  contentContainer: { 
-    paddingBottom: scale(60),
-  },
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    paddingVertical: scale(20), 
-    borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-    marginBottom: scale(16),
-  },
-  backButton: {
-    marginRight: scale(16),
-  },
-  title: { 
-    fontSize: responsiveFontSize(22), 
-    fontWeight: 'bold',
-    flex: 1,
-  },
-});

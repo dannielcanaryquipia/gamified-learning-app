@@ -12,7 +12,6 @@ import LoadingOverlay from '../../../components/LoadingOverlay/LoadingOverlay';
 import Skeleton from '../../../components/Skeleton/Skeleton';
 import { scale, responsiveFontSize, getScreenDimensions } from '../../../constants/responsive';
 import { useLoadingOverlay } from '../../../hooks/useLoadingOverlay';
-import ProgressBar from '../../../components/ProgressBar/ProgressBar';
 
 export default function NestedLessonScreen() {
   const { isDark } = useTheme();
@@ -27,6 +26,7 @@ export default function NestedLessonScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [scrollY] = useState(new Animated.Value(0));
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const screenDims = getScreenDimensions();
@@ -35,28 +35,20 @@ export default function NestedLessonScreen() {
   useEffect(() => {
     const loadLesson = async () => {
       if (!topicId || !lessonId) return;
-      
       try {
         const topics = await fetchTopics();
         const topicData = topics.find((t: any) => t.id === topicId);
-        
         if (!topicData) return;
-        
         const lessonData = topicData.lessons?.find((l: any) => l.id === lessonId);
-        
         setLesson(lessonData || null);
         setTopicTitle(topicData.title);
-        
-        if (lessonData?.isCompleted) {
-          setIsCompleted(true);
-        }
+        if (lessonData?.isCompleted) setIsCompleted(true);
       } catch (error) {
         console.error('Error loading lesson:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
     loadLesson();
   }, [topicId, lessonId]);
 
@@ -71,124 +63,119 @@ export default function NestedLessonScreen() {
     }
   }, [isLoading, lesson, isWideScreen]);
 
-  const handleBack = () => {
-    router.back();
-  };
-
-  const handleScroll = (event: any) => {
-    if (isWideScreen) return;
-
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
-    
-    if (isCloseToBottom && !isAtBottom) {
-      setIsAtBottom(true);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: Platform.OS !== 'web',
-      }).start();
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { 
+      useNativeDriver: false,
+      listener: (event: any) => {
+        if (isWideScreen) return;
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 150;
+        if (isCloseToBottom && !isAtBottom) {
+          setIsAtBottom(true);
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: Platform.OS !== 'web',
+          }).start();
+        }
+      }
     }
-  };
+  );
 
   const handleMarkAsCompleted = async () => {
     if (!topicId || !lessonId || isCompleted || isRedirecting) return;
-    
     try {
       showLoading('Capturing Knowledge...');
       await markLessonComplete(topicId, lessonId);
       setIsCompleted(true);
-      
       setTimeout(() => {
         hideLoading();
         router.back();
       }, 1500);
     } catch (error) {
-      console.error('Error completing lesson:', error);
       setIsCompleted(false);
       hideLoading();
     }
   };
 
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
   if (isLoading) {
     return (
       <PageContainer style={{ backgroundColor: colors.background }}>
-        <View style={styles.header}>
-          <Skeleton width={scale(40)} height={scale(40)} borderRadius={scale(20)} style={{ marginRight: scale(16) }} />
-          <View style={styles.headerContent}>
-            <Skeleton width={scale(240)} height={scale(32)} style={{ marginBottom: scale(8) }} />
-            <Skeleton width={scale(180)} height={scale(16)} />
-          </View>
-        </View>
-        <View style={{ marginTop: scale(32) }}>
-          <Skeleton width="100%" height={scale(20)} style={{ marginBottom: scale(16) }} />
-          <Skeleton width="95%" height={scale(20)} style={{ marginBottom: scale(16) }} />
-          <Skeleton width="40%" height={scale(20)} style={{ marginBottom: scale(40) }} />
-          <Skeleton width="100%" height={scale(280)} borderRadius={scale(16)} style={{ marginBottom: scale(32) }} />
-        </View>
+        <Skeleton width="100%" height={scale(60)} style={{ marginBottom: scale(32) }} />
+        <Skeleton width="60%" height={scale(40)} style={{ marginBottom: scale(24) }} />
+        <Skeleton width="100%" height={scale(20)} style={{ marginBottom: scale(12) }} />
+        <Skeleton width="90%" height={scale(20)} style={{ marginBottom: scale(40) }} />
+        <Skeleton width="100%" height={scale(300)} borderRadius={scale(24)} />
       </PageContainer>
     );
   }
 
-  if (!lesson) {
-    return (
-      <PageContainer>
-        <View style={styles.centerContainer}>
-          <MaterialIcons name="report-problem" size={scale(48)} color={colors.error} />
-          <Text style={[styles.errorText, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>Knowledge Link Broken</Text>
-          <TouchableOpacity onPress={handleBack} style={{ marginTop: scale(20) }}>
-            <Text style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Return to Archives</Text>
-          </TouchableOpacity>
-        </View>
-      </PageContainer>
-    );
-  }
+  if (!lesson) return null;
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <LoadingOverlay visible={isRedirecting} message="Integrating knowledge..." />
+      
+      {/* Floating Glass Header */}
+      <Animated.View style={[
+        styles.floatingHeader, 
+        { 
+          backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+          borderBottomColor: colors.surfaceContainerHighest,
+          opacity: headerOpacity
+        }
+      ]}>
+          <Text style={[styles.floatingTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]} numberOfLines={1}>
+            {lesson.title}
+          </Text>
+      </Animated.View>
+
       <PageContainer
         scrollable={true}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={styles.pageContent}
       >
-        <ProgressBar 
-          progress={isCompleted ? 1 : 0.5} 
-          height={scale(3)} 
-          gradientColors={[colors.primary, colors.primaryDim]}
-          style={styles.topProgress}
-          showLabel={false}
-        />
-        
-        <View style={styles.header}>
+        {/* Top Navigation Row */}
+        <View style={styles.topNav}>
           <TouchableOpacity 
-            onPress={handleBack}
-            style={[styles.backButton, { backgroundColor: colors.surfaceContainerLow }]}
+            onPress={() => router.back()}
+            style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow }]}
           >
-            <MaterialIcons name="close" size={scale(20)} color={colors.onSurfaceVariant} />
+            <MaterialIcons name="close" size={scale(20)} color={colors.onSurface} />
           </TouchableOpacity>
-          <View style={styles.headerContent}>
-            <Text style={[styles.title, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>{lesson.title}</Text>
-            <View style={styles.meta}>
-              <View style={styles.metaItem}>
-                <MaterialIcons name="hourglass-top" size={scale(12)} color={colors.onSurfaceVariant} />
-                <Text style={[styles.metaText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
-                  {lesson.duration} min
-                </Text>
-              </View>
-              <View style={styles.metaDivider} />
-              <View style={styles.metaItem}>
-                <MaterialIcons name="stars" size={scale(12)} color={colors.tertiary} />
-                <Text style={[styles.metaText, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
-                  {lesson.xp} XP
-                </Text>
-              </View>
-            </View>
+          <View style={styles.breadCrumb}>
+             <Text style={[styles.breadText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>{topicTitle.toUpperCase()}</Text>
+             <MaterialIcons name="chevron-right" size={scale(14)} color={colors.onSurfaceVariant} opacity={0.5} />
+             <Text style={[styles.breadText, { color: colors.primary, fontFamily: 'Manrope_700Bold' }]}>MODULE {lesson.order}</Text>
           </View>
         </View>
 
-        <View style={styles.lessonContainer}>
+        {/* Hero Section */}
+        <View style={styles.lessonHero}>
+           <Text style={[styles.lessonTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
+              {lesson.title}
+           </Text>
+           <View style={styles.metaRow}>
+              <View style={[styles.metaTag, { backgroundColor: colors.surfaceContainerHighest }]}>
+                 <MaterialIcons name="schedule" size={scale(12)} color={colors.primary} />
+                 <Text style={[styles.metaTagName, { color: colors.onSurface, fontFamily: 'Manrope_700Bold' }]}>{lesson.duration} MIN READ</Text>
+              </View>
+              <View style={[styles.metaTag, { backgroundColor: colors.tertiary + '15' }]}>
+                 <MaterialIcons name="bolt" size={scale(12)} color={colors.tertiary} />
+                 <Text style={[styles.metaTagName, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>{lesson.xp} XP</Text>
+              </View>
+           </View>
+        </View>
+
+        <View style={styles.contentWrapper}>
           <LessonContent 
             content={lesson.content}
             description={lesson.description}
@@ -197,78 +184,87 @@ export default function NestedLessonScreen() {
             onComplete={handleMarkAsCompleted}
             showCompleteButton={isAtBottom || isCompleted}
             fadeAnim={fadeAnim}
+            quiz={lesson.quiz}
+            xpValue={lesson.xp}
           />
         </View>
       </PageContainer>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  pageContent: {
-    paddingBottom: scale(100),
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: scale(40),
-  },
-  errorText: {
-    fontSize: responsiveFontSize(18),
-    marginTop: scale(16),
-  },
-  topProgress: {
+  floatingHeader: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 100,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: scale(20),
-    marginTop: scale(8),
-    marginBottom: scale(24),
-  },
-  backButton: {
-    width: scale(36),
-    height: scale(36),
-    borderRadius: scale(18),
+    height: scale(64),
+    paddingTop: Platform.OS === 'ios' ? scale(20) : 0,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: scale(16),
+    zIndex: 1000,
+    borderBottomWidth: 1,
+    ...Platform.select({
+       web: { backdropFilter: 'blur(10px)' },
+    })
   },
-  headerContent: {
-    flex: 1,
+  floatingTitle: {
+    fontSize: responsiveFontSize(14),
+    maxWidth: '70%',
   },
-  title: {
-    fontSize: responsiveFontSize(20),
-    marginBottom: scale(4),
-    letterSpacing: -0.3,
+  pageContent: {
+    paddingVertical: scale(20),
+    paddingBottom: scale(100),
   },
-  meta: {
+  topNav: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: scale(48),
+    gap: scale(16),
   },
-  metaItem: {
+  backBtn: {
+    width: scale(36),
+    height: scale(36),
+    borderRadius: scale(12),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  breadCrumb: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
+    gap: scale(8),
   },
-  metaText: {
-    fontSize: responsiveFontSize(12),
-    opacity: 0.8,
+  breadText: {
+    fontSize: responsiveFontSize(10),
+    letterSpacing: 1,
   },
-  metaDivider: {
-    width: scale(4),
-    height: scale(4),
-    borderRadius: scale(2),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginHorizontal: scale(12),
+  lessonHero: {
+    marginBottom: scale(40),
   },
-  lessonContainer: {
+  lessonTitle: {
+    fontSize: responsiveFontSize(36),
+    lineHeight: responsiveFontSize(42),
+    marginBottom: scale(20),
+    letterSpacing: -1.5,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    gap: scale(12),
+  },
+  metaTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(6),
+    borderRadius: scale(8),
+    gap: scale(6),
+  },
+  metaTagName: {
+    fontSize: responsiveFontSize(10),
+    letterSpacing: 0.5,
+  },
+  contentWrapper: {
     width: '100%',
   },
 });

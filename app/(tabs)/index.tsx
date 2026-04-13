@@ -8,11 +8,10 @@ import {
   TextStyle,
   View,
   ViewStyle,
-  Platform
+  Platform,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Card from '../../components/Card/Card';
-import ProgressBar from '../../components/ProgressBar/ProgressBar';
 import StreakRestoreModal from '../../components/StreakRestoreModal/StreakRestoreModal';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { scale, responsiveFontSize } from '../../constants/responsive';
@@ -22,34 +21,7 @@ import { fetchTopics } from '../../services/mockData';
 import { Topic } from '../../types';
 import Skeleton from '../../components/Skeleton/Skeleton';
 
-type Styles = {
-  header: ViewStyle;
-  greeting: TextStyle;
-  subtitle: TextStyle;
-  statsContainer: ViewStyle;
-  statCard: ViewStyle;
-  statValue: TextStyle;
-  statLabel: TextStyle;
-  section: ViewStyle;
-  sectionTitle: TextStyle;
-  card: ViewStyle;
-  topicHeader: ViewStyle;
-  topicInfo: ViewStyle;
-  topicTitle: TextStyle;
-  topicCategory: TextStyle;
-  progressContainer: ViewStyle;
-  progressTextContainer: ViewStyle;
-  progressText: TextStyle;
-  xpText: TextStyle;
-  headerContent: ViewStyle;
-  headerGlow: ViewStyle;
-  missionLevelContainer: ViewStyle;
-  levelBadge: ViewStyle;
-  levelText: TextStyle;
-  levelProgressWrapper: ViewStyle;
-  subtitleContainer: ViewStyle;
-  statusDot: ViewStyle;
-};
+import TopicCard from '../../components/TopicCard/TopicCard';
 
 const HomeScreen = () => {
   const { 
@@ -81,6 +53,7 @@ const HomeScreen = () => {
   
   const router = useRouter();
   const inProgressTopics = topics.filter(topic => !topic.isLocked && topic.completedLessons < topic.totalLessons);
+  const availableTopics = topics.filter(topic => !topic.isLocked && (topic.completedLessons === topic.totalLessons || topic.completedLessons === 0));
   
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
@@ -113,55 +86,13 @@ const HomeScreen = () => {
     });
   }, [updateStreak]);
 
-  const renderTopicCard = (topic: Topic) => {
-    const progress = topic.totalLessons > 0 ? (topic.completedLessons / topic.totalLessons) : 0;
-    const isCompleted = topic.completedLessons === topic.totalLessons;
-
-    const handlePress = () => {
-      router.push({
-        pathname: '/[topicId]/page',
-        params: { topicId: topic.id },
-      } as any);
-    };
-
+  const renderTopicCard = (topic: Topic, isFeatured: boolean = false) => {
     return (
-      <Card 
-        key={topic.id} 
-        style={styles.card}
-        onPress={handlePress}
-        variant="elevated"
-      >
-        <View style={styles.topicHeader}>
-          <View style={styles.topicInfo}>
-            <Text style={[styles.topicTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>{topic.title}</Text>
-            <Text style={[styles.topicCategory, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_500Medium' }]}>{topic.category}</Text>
-          </View>
-          {isCompleted && (
-            <MaterialIcons 
-              name="check-circle" 
-              size={scale(24)} 
-              color={colors.success} 
-            />
-          )}
-        </View>
-        
-        <View style={styles.progressContainer}>
-          <View style={styles.progressTextContainer}>
-            <Text style={[styles.progressText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
-              {topic.completedLessons} of {topic.totalLessons} lessons
-            </Text>
-            <Text style={[styles.xpText, { color: colors.primary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
-              {topic.currentXp}/{topic.totalXp} XP
-            </Text>
-          </View>
-          <ProgressBar 
-            progress={progress} 
-            height={scale(6)}
-            gradientColors={isCompleted ? [colors.success, colors.success] : [colors.primary, colors.primaryDim]}
-            showLabel={false}
-          />
-        </View>
-      </Card>
+      <TopicCard 
+        key={topic.id}
+        {...topic}
+        featured={isFeatured}
+      />
     );
   };
 
@@ -172,31 +103,11 @@ const HomeScreen = () => {
           <Skeleton width={scale(200)} height={scale(32)} style={{ marginBottom: scale(8) }} />
           <Skeleton width={scale(150)} height={scale(16)} />
         </View>
-
-        <View style={styles.statsContainer}>
-          {[1, 2, 3].map((i) => (
-            <Skeleton 
-              key={i}
-              style={styles.statCard} 
-              height={scale(80)} 
-              borderRadius={scale(12)} 
-            />
-          ))}
+        <View style={styles.statsRow}>
+           <Skeleton width={scale(100)} height={scale(80)} borderRadius={scale(16)} />
+           <Skeleton width={scale(100)} height={scale(80)} borderRadius={scale(16)} />
+           <Skeleton width={scale(100)} height={scale(80)} borderRadius={scale(16)} />
         </View>
-
-        {[1, 2].map((section) => (
-          <View key={section} style={styles.section}>
-            <Skeleton width={scale(140)} height={scale(24)} style={{ marginBottom: scale(16) }} />
-            {[1, 2].map((card) => (
-              <Skeleton 
-                key={card}
-                style={styles.card} 
-                height={scale(120)} 
-                borderRadius={scale(12)} 
-              />
-            ))}
-          </View>
-        ))}
       </PageContainer>
     );
   }
@@ -204,7 +115,7 @@ const HomeScreen = () => {
   return (
     <>
       <PageContainer
-        contentContainerStyle={{ paddingVertical: scale(32) }}
+        contentContainerStyle={{ paddingVertical: scale(32), paddingBottom: scale(100) }}
         refreshControl={
           <RefreshControl 
             refreshing={isLoading} 
@@ -214,78 +125,76 @@ const HomeScreen = () => {
           />
         }
       >
+        {/* Atmospheric Header - Weighted Layout */}
         <View style={styles.header}>
           <LinearGradient
-            colors={[isDark ? 'rgba(139, 172, 255, 0.12)' : 'rgba(0, 108, 251, 0.08)', 'transparent']}
+            colors={[isDark ? 'rgba(139, 172, 255, 0.15)' : 'rgba(0, 108, 251, 0.1)', 'transparent']}
             style={styles.headerGlow}
           />
           <View style={styles.headerContent}>
             <Text style={[styles.greeting, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
-              Hello, {userProfile?.name || 'Learner'}! 👋
+              Mission{"\n"}Control
             </Text>
-            <View style={styles.missionLevelContainer}>
-              <View style={[styles.levelBadge, { backgroundColor: colors.primary }]}>
-                <Text style={[styles.levelText, { color: colors.onPrimary || '#FFF', fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
-                  LVL {Math.floor((userProgress?.totalXP || 0) / 1000) + 1}
-                </Text>
-              </View>
-              <View style={styles.levelProgressWrapper}>
-                <ProgressBar 
-                  progress={((userProgress?.totalXP || 0) % 1000) / 1000} 
-                  height={scale(6)}
-                  gradientColors={[colors.primary, colors.primaryDim]}
-                  showLabel={false}
-                />
-              </View>
-            </View>
             <View style={styles.subtitleContainer}>
               <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
-              <Text style={{ ...styles.subtitle, color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }}>
-                {userProgress?.topicsCompleted} of {userProgress?.totalTopics} topics archived
+              <Text style={[styles.subtitle, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
+                {userProfile?.name || 'Explorer'} active. Archive: {userProgress?.topicsCompleted}/{userProgress?.totalTopics}
               </Text>
             </View>
           </View>
+          
+          {/* Level Overlay - Asymmetric Element */}
+          <View style={[styles.levelBadgeContainer, { backgroundColor: colors.surfaceContainerHighest }]}>
+            <Text style={[styles.levelLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>RANK</Text>
+            <Text style={[styles.levelValue, { color: colors.primary, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
+              {Math.floor((userProgress?.totalXP || 0) / 1000) + 1}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.statsContainer}>
-          <Card variant="filled" style={StyleSheet.flatten([styles.statCard, { backgroundColor: colors.surfaceContainer }])}>
-            <Text style={[styles.statValue, { color: colors.primary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
-              {userProgress?.topicsCompleted || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>Topics</Text>
-          </Card>
-          
-          <Card variant="filled" style={StyleSheet.flatten([styles.statCard, { backgroundColor: colors.surfaceContainer }])}>
-            <Text style={[styles.statValue, { color: colors.primary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
+        {/* Stats Row - Tonal stacking */}
+        <View style={styles.statsRow}>
+          <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerLow }]}>
+            <Text style={[styles.statValue, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               {userProgress?.totalXP || 0}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>XP</Text>
-          </Card>
-          
-          <Card variant="filled" style={StyleSheet.flatten([styles.statCard, { backgroundColor: colors.surfaceContainerHigh }])}>
+            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>TOTAL XP</Text>
+          </View>
+          <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerLow }]}>
             <Text style={[styles.statValue, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
-              {streakData?.currentStreak || 0} 🔥
+              {streakData?.currentStreak || 0}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>Streak</Text>
-          </Card>
+            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>STREAK</Text>
+          </View>
         </View>
 
-        {inProgressTopics.length > 0 && (
+        {/* Weighted Grid Layout */}
+        <View style={styles.contentGrid}>
+          {inProgressTopics.length > 0 && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
+                Active Missions
+              </Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.horizontalScroll}
+                snapToInterval={scale(280) + scale(16)}
+                decelerationRate="fast"
+              >
+                {inProgressTopics.map(topic => renderTopicCard(topic, true))}
+              </ScrollView>
+            </View>
+          )}
+
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
-              Continue Mission
+              Knowledge Archive
             </Text>
-            {inProgressTopics.map(renderTopicCard)}
+            <View style={styles.verticalGrid}>
+              {availableTopics.map(topic => renderTopicCard(topic, false))}
+            </View>
           </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
-            {inProgressTopics.length > 0 ? 'Archive Library' : 'Available Knowledge'}
-          </Text>
-          {topics
-            .filter(topic => !topic.isLocked)
-            .map(renderTopicCard)}
         </View>
       </PageContainer>
 
@@ -300,50 +209,33 @@ const HomeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   header: {
-    marginBottom: scale(32),
+    marginBottom: scale(40),
     paddingHorizontal: scale(4),
     position: 'relative',
     paddingVertical: scale(20),
-    minHeight: scale(160),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   headerGlow: {
-    ...StyleSheet.absoluteFillObject,
-    height: scale(250),
-    top: -scale(80),
-    left: -scale(60),
-    right: -scale(60),
+    position: 'absolute',
+    top: -scale(100),
+    left: -scale(50),
+    right: -scale(50),
+    height: scale(350),
     opacity: 0.8,
   },
   headerContent: {
+    flex: 1,
     zIndex: 2,
   },
   greeting: {
-    fontSize: responsiveFontSize(36),
-    letterSpacing: -1.5,
-    marginBottom: scale(12),
-  },
-  missionLevelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    fontSize: responsiveFontSize(48),
+    lineHeight: responsiveFontSize(52),
+    letterSpacing: -2,
     marginBottom: scale(16),
-    gap: scale(12),
-  },
-  levelBadge: {
-    paddingHorizontal: scale(10),
-    paddingVertical: scale(4),
-    borderRadius: scale(8),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  levelText: {
-    fontSize: responsiveFontSize(12),
-    letterSpacing: 0.5,
-  },
-  levelProgressWrapper: {
-    flex: 1,
-    maxWidth: scale(180),
   },
   subtitleContainer: {
     flexDirection: 'row',
@@ -353,74 +245,74 @@ const styles = StyleSheet.create<Styles>({
     width: scale(8),
     height: scale(8),
     borderRadius: scale(4),
-    marginRight: scale(8),
+    marginRight: scale(10),
   },
   subtitle: {
-    fontSize: responsiveFontSize(14),
-    opacity: 0.9,
+    fontSize: responsiveFontSize(13),
+    opacity: 0.8,
+    letterSpacing: 0.2,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: scale(40),
-  },
-  statCard: {
-    flex: 1,
-    marginHorizontal: scale(4),
+  levelBadgeContainer: {
     padding: scale(16),
+    borderRadius: scale(24),
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: scale(80),
+    zIndex: 3,
+    marginTop: scale(10),
+    ...Platform.select({
+      web: { boxShadow: '0 8px 32px rgba(0,0,0,0.3)' },
+      default: { elevation: 10 }
+    })
+  },
+  levelLabel: {
+    fontSize: responsiveFontSize(10),
+    letterSpacing: 2,
+    marginBottom: scale(4),
+    opacity: 0.6,
+  },
+  levelValue: {
+    fontSize: responsiveFontSize(28),
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: scale(12),
+    marginBottom: scale(48),
+    paddingHorizontal: scale(4),
+  },
+  statItem: {
+    flex: 1,
+    padding: scale(20),
+    borderRadius: scale(20),
     justifyContent: 'center',
   },
   statValue: {
     fontSize: responsiveFontSize(24),
-    marginBottom: scale(2),
+    marginBottom: scale(4),
   },
   statLabel: {
     fontSize: responsiveFontSize(10),
     letterSpacing: 1,
-    textTransform: 'uppercase',
+    opacity: 0.5,
+  },
+  contentGrid: {
+    gap: scale(40),
   },
   section: {
-    marginBottom: scale(32),
+    gap: scale(20),
   },
   sectionTitle: {
-    fontSize: responsiveFontSize(18),
-    marginBottom: scale(16),
+    fontSize: responsiveFontSize(20),
     paddingHorizontal: scale(4),
+    letterSpacing: -0.5,
   },
-  card: {
-    marginBottom: scale(16),
-    padding: scale(20),
+  horizontalScroll: {
+    paddingRight: scale(20),
+    gap: scale(16),
+    paddingVertical: scale(4),
   },
-  topicHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: scale(16),
-  },
-  topicInfo: {
-    flex: 1,
-  },
-  topicTitle: {
-    fontSize: responsiveFontSize(17),
-    marginBottom: scale(2),
-  },
-  topicCategory: {
-    fontSize: responsiveFontSize(13),
-  },
-  progressContainer: {
-    marginTop: scale(8),
-  },
-  progressTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: scale(10),
-  },
-  progressText: {
-    fontSize: responsiveFontSize(12),
-  },
-  xpText: {
-    fontSize: responsiveFontSize(12),
+  verticalGrid: {
+    gap: scale(16),
   },
 });
 

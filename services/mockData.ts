@@ -291,6 +291,34 @@ const networkingBasicsLessons: Lesson[] = [
     isCompleted: false,
     xp: 50,
     order: 1,
+    quiz: {
+      id: 'quiz-ip-1',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'q1',
+          question: 'What is the primary purpose of an IP address?',
+          options: [
+            'To store website images',
+            'To uniquely identify a device on a network',
+            'To increase internet connection speed',
+            'To encrypt user emails'
+          ],
+          correctIndex: 1
+        },
+        {
+          id: 'q2',
+          question: 'Which IP version was created to handle the shortage of unique addresses?',
+          options: [
+            'IPv2',
+            'IPv4',
+            'IPv6',
+            'IPvX'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# Introduction
 Every device connected to a network needs a unique identifier, much like your home has a physical mailing address. This is where the **Internet Protocol (IP)** address comes in.
 

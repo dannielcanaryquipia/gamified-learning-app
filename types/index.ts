@@ -1,3 +1,16 @@
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface Quiz {
+  id: string;
+  questions: QuizQuestion[];
+  passingScore: number;
+}
+
 export interface Lesson {
   id: string;
   title: string;
@@ -7,6 +20,7 @@ export interface Lesson {
   isCompleted: boolean;
   xp: number;
   order: number;
+  quiz?: Quiz;
 }
 
 export interface Topic {

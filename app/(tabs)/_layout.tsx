@@ -46,6 +46,18 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="missions"
+          options={{
+            title: 'Missions',
+          }}
+        />
+        <Tabs.Screen
+          name="leaderboard"
+          options={{
+            title: 'Rankings',
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',

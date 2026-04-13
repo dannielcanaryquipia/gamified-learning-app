@@ -4,6 +4,8 @@ import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
+import Card from '../Card/Card';
+import ProgressBar from '../ProgressBar/ProgressBar';
 
 export interface TopicCardProps {
   id: string;
@@ -12,9 +14,10 @@ export interface TopicCardProps {
   icon: string;
   completedLessons: number;
   totalLessons: number;
-  xp: number;
+  currentXp: number;
   isLocked: boolean;
   onPress?: (id: string) => void;
+  featured?: boolean;
 }
 
 const TopicCard: React.FC<TopicCardProps> = ({
@@ -24,13 +27,15 @@ const TopicCard: React.FC<TopicCardProps> = ({
   icon,
   completedLessons,
   totalLessons,
-  xp,
+  currentXp,
   isLocked,
   onPress,
+  featured = false,
 }) => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
-  const progress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+  const progress = totalLessons > 0 ? (completedLessons / totalLessons) : 0;
+  const isCompleted = completedLessons === totalLessons && totalLessons > 0;
   const router = useRouter();
 
   const handlePress = () => {
@@ -39,164 +44,110 @@ const TopicCard: React.FC<TopicCardProps> = ({
       onPress(id);
     } else {
       router.push({
-        pathname: `/${id}/page`,
-        params: {},
+        pathname: '/[topicId]/page',
+        params: { topicId: id },
       } as any);
     }
   };
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.container, 
-        { 
-          backgroundColor: isLocked ? colors.disabled + '20' : colors.card,
-          borderColor: colors.border
-        },
-        isLocked && styles.lockedContainer
-      ]}
+    <Card 
       onPress={handlePress}
       disabled={isLocked}
-      activeOpacity={0.8}
+      variant="cosmic"
+      style={[
+        styles.container, 
+        featured && styles.featuredCard,
+        { 
+          backgroundColor: featured ? colors.surfaceContainerHighest : colors.surfaceContainerLow,
+          opacity: isLocked ? 0.6 : 1
+        }
+      ]}
     >
-      <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: isLocked ? colors.disabled + '40' : colors.primary + '15' }]}>
-          <MaterialIcons 
-            name={icon as any || 'school'} 
-            size={scale(24)} 
-            color={isLocked ? colors.placeholder : colors.primary} 
-          />
+      <View style={styles.topicHeader}>
+        <View style={styles.topicInfo}>
+           <View style={styles.categoryRow}>
+             <MaterialIcons name={icon as any || 'school'} size={scale(14)} color={isLocked ? colors.onSurfaceVariant : colors.primary} style={{ marginRight: scale(6) }} />
+             <Text style={[styles.topicCategory, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>{category}</Text>
+           </View>
+           <Text style={[styles.topicTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>{title}</Text>
         </View>
-        <View style={styles.headerText}>
-          <Text style={[styles.title, { color: isLocked ? colors.placeholder : colors.text }]}>{title}</Text>
-          <Text style={[styles.category, { color: isLocked ? colors.placeholder : colors.placeholder }]}>{category}</Text>
-        </View>
-        {isLocked && (
-          <MaterialIcons 
-            name="lock" 
-            size={scale(20)} 
-            color={colors.placeholder} 
-            style={styles.lockIcon}
-          />
+        {isCompleted ? (
+           <MaterialIcons name="verified" size={scale(24)} color={colors.success} />
+        ) : isLocked ? (
+           <MaterialIcons name="lock" size={scale(20)} color={colors.onSurfaceVariant} />
+        ) : (
+           <Text style={[styles.xpText, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>{currentXp} XP</Text>
         )}
       </View>
       
       <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-          <View 
-            style={[
-              styles.progressFill, 
-              { 
-                width: `${progress}%`,
-                backgroundColor: isLocked ? colors.disabled : colors.primary
-              }
-            ]} 
-          />
+        <View style={styles.progressTextContainer}>
+          <Text style={[styles.progressText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
+            {completedLessons}/{totalLessons} {featured ? 'MODULES' : ''}
+          </Text>
+          {isCompleted && !featured && <Text style={[styles.xpText, { color: colors.success, fontFamily: 'PlusJakartaSans_700Bold' }]}>COMPLETED</Text>}
         </View>
-        <Text style={[styles.progressText, { color: colors.placeholder }]}>
-          {completedLessons}/{totalLessons} lessons
-        </Text>
+        <ProgressBar 
+          progress={progress} 
+          height={scale(4)}
+          gradientColors={isCompleted ? [colors.success, colors.success] : [colors.primary, colors.primaryDim]}
+          showLabel={false}
+        />
       </View>
-      
-      <View style={styles.footer}>
-        <View style={[styles.xpBadge, { backgroundColor: isLocked ? colors.disabled + '20' : colors.secondary + '15' }]}>
-          <Text style={[styles.xpText, { color: isLocked ? colors.placeholder : colors.secondary }]}>{xp} XP</Text>
-        </View>
-        {!isLocked && (
-          <MaterialIcons 
-            name="chevron-right" 
-            size={scale(24)} 
-            color={colors.primary} 
-          />
-        )}
-      </View>
-    </TouchableOpacity>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: scale(16),
-    padding: scale(16),
-    marginBottom: scale(16),
-    borderWidth: 1,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: scale(2) },
-        shadowOpacity: 0.1,
-        shadowRadius: scale(4),
-        elevation: 3,
-      },
-    }),
-  },
-  lockedContainer: {
-    opacity: 0.8,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: scale(16),
-  },
-  iconContainer: {
-    width: scale(48),
-    height: scale(48),
+    padding: scale(20),
     borderRadius: scale(24),
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: scale(12),
+    marginBottom: scale(16),
   },
-  headerText: {
+  featuredCard: {
+    width: scale(280),
+    minHeight: scale(160),
+    marginBottom: 0,
+  },
+  topicHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: scale(24),
+  },
+  topicInfo: {
     flex: 1,
   },
-  title: {
-    fontSize: responsiveFontSize(18),
-    fontWeight: '700',
-    marginBottom: scale(2),
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: scale(8),
   },
-  category: {
-    fontSize: responsiveFontSize(12),
-    fontWeight: '600',
+  topicTitle: {
+    fontSize: responsiveFontSize(18),
+    lineHeight: responsiveFontSize(24),
+  },
+  topicCategory: {
+    fontSize: responsiveFontSize(10),
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   progressContainer: {
-    marginBottom: scale(16),
+    gap: scale(10),
   },
-  progressBar: {
-    height: scale(8),
-    borderRadius: scale(4),
-    marginBottom: scale(6),
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: scale(4),
-  },
-  progressText: {
-    fontSize: responsiveFontSize(13),
-    fontWeight: '500',
-    textAlign: 'right',
-  },
-  footer: {
+  progressTextContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  xpBadge: {
-    paddingHorizontal: scale(10),
-    paddingVertical: scale(4),
-    borderRadius: scale(20),
+  progressText: {
+    fontSize: responsiveFontSize(10),
+    letterSpacing: 1,
+    opacity: 0.7,
   },
   xpText: {
-    fontSize: responsiveFontSize(13),
-    fontWeight: '700',
-  },
-  lockIcon: {
-    marginLeft: scale(8),
+    fontSize: responsiveFontSize(12),
   },
 });
 

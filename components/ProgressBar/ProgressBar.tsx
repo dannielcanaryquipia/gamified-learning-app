@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Platform, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { scale } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 
@@ -7,6 +8,7 @@ interface ProgressBarProps {
   progress: number; // Value between 0 and 1
   height?: number;
   color?: string;
+  gradientColors?: string[];
   backgroundColor?: string;
   borderRadius?: number;
   showLabel?: boolean;
@@ -16,30 +18,30 @@ interface ProgressBarProps {
   testID?: string;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({
+const ProgressBar = ({
   progress,
   height = scale(8),
   color,
+  gradientColors,
   backgroundColor,
-  borderRadius = scale(4),
+  borderRadius = scale(6),
   showLabel = false,
   labelPosition = 'right',
   labelStyle,
   style,
   testID,
-}) => {
+}: ProgressBarProps) => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
   
-  // Ensure progress is between 0 and 1
   const normalizedProgress = Math.min(Math.max(progress, 0), 1);
   const percentage = Math.round(normalizedProgress * 100);
   
-  // Default colors based on theme
-  const progressColor = color || colors.primary;
-  const trackColor = backgroundColor || (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)');
+  const startColor = gradientColors ? gradientColors[0] : (color || colors.primary);
+  const endColor = gradientColors ? (gradientColors[1] || gradientColors[0]) : (color || colors.primaryDim);
   
-  // Determine label position styles
+  const trackColor = backgroundColor || colors.trackBackground;
+  
   const getLabelPosition = () => {
     switch (labelPosition) {
       case 'top':
@@ -81,17 +83,27 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           },
         ]}
       >
-        <View
+        <LinearGradient
+          colors={[startColor, endColor]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
           style={[
             styles.progress,
             {
               width: `${percentage}%`,
               height: '100%',
-              backgroundColor: progressColor,
-              borderTopLeftRadius: borderRadius,
-              borderBottomLeftRadius: borderRadius,
-              borderTopRightRadius: normalizedProgress === 1 ? borderRadius : 0,
-              borderBottomRightRadius: normalizedProgress === 1 ? borderRadius : 0,
+              borderRadius,
+              ...Platform.select({
+                web: {
+                  boxShadow: isDark ? `0px 0px 10px ${startColor}80` : 'none',
+                },
+                default: {
+                  shadowColor: startColor,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: isDark ? 0.5 : 0,
+                  shadowRadius: 4,
+                }
+              })
             },
           ]}
         />
@@ -101,7 +113,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             <Text 
               style={[
                 styles.label, 
-                { color: colors.text },
+                { color: colors.onSurface, fontFamily: 'Manrope_600SemiBold' },
                 labelStyle
               ]}
             >
@@ -116,7 +128,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           style={[
             styles.label, 
             { 
-              color: colors.text,
+              color: colors.onSurface,
+              fontFamily: 'Manrope_600SemiBold',
               marginLeft: labelPosition === 'right' ? scale(8) : 0,
               marginRight: labelPosition === 'left' ? scale(8) : 0,
               marginTop: labelPosition === 'bottom' ? scale(4) : 0,
@@ -147,8 +160,7 @@ const styles = StyleSheet.create({
     top: 0,
   },
   label: {
-    fontSize: scale(12),
-    fontWeight: '500',
+    fontSize: scale(11),
   },
   centeredLabelContainer: {
     position: 'absolute',

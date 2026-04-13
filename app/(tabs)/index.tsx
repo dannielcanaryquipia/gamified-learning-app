@@ -7,8 +7,10 @@ import {
   Text,
   TextStyle,
   View,
-  ViewStyle
+  ViewStyle,
+  Platform
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Card from '../../components/Card/Card';
 import ProgressBar from '../../components/ProgressBar/ProgressBar';
 import StreakRestoreModal from '../../components/StreakRestoreModal/StreakRestoreModal';
@@ -39,6 +41,14 @@ type Styles = {
   progressTextContainer: ViewStyle;
   progressText: TextStyle;
   xpText: TextStyle;
+  headerContent: ViewStyle;
+  headerGlow: ViewStyle;
+  missionLevelContainer: ViewStyle;
+  levelBadge: ViewStyle;
+  levelText: TextStyle;
+  levelProgressWrapper: ViewStyle;
+  subtitleContainer: ViewStyle;
+  statusDot: ViewStyle;
 };
 
 const HomeScreen = () => {
@@ -80,15 +90,12 @@ const HomeScreen = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      // For new users or first time, show the popup
       if (!streakData) {
-        // Initialize streak data for new users
         updateStreak().then(() => {
           setShowStreakModal(true);
         });
       } else {
         const lastActive = streakData.lastActiveDate ? new Date(streakData.lastActiveDate) : null;
-        // Show modal if it's a new day or first load
         if (isFirstLoad || (lastActive && lastActive < today)) {
           setShowStreakModal(true);
         }
@@ -111,8 +118,6 @@ const HomeScreen = () => {
     const isCompleted = topic.completedLessons === topic.totalLessons;
 
     const handlePress = () => {
-      console.log(`Home: Navigating to topic ${topic.id}`);
-      // Navigate to the dynamic topic page
       router.push({
         pathname: '/[topicId]/page',
         params: { topicId: topic.id },
@@ -128,31 +133,31 @@ const HomeScreen = () => {
       >
         <View style={styles.topicHeader}>
           <View style={styles.topicInfo}>
-            <Text style={[styles.topicTitle, { color: colors.text }]}>{topic.title}</Text>
-            <Text style={[styles.topicCategory, { color: colors.text }]}>{topic.category}</Text>
+            <Text style={[styles.topicTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>{topic.title}</Text>
+            <Text style={[styles.topicCategory, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_500Medium' }]}>{topic.category}</Text>
           </View>
           {isCompleted && (
             <MaterialIcons 
               name="check-circle" 
               size={scale(24)} 
-              color="#4CAF50" 
+              color={colors.success} 
             />
           )}
         </View>
         
         <View style={styles.progressContainer}>
           <View style={styles.progressTextContainer}>
-            <Text style={[styles.progressText, { color: colors.text }]}>
+            <Text style={[styles.progressText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
               {topic.completedLessons} of {topic.totalLessons} lessons
             </Text>
-            <Text style={[styles.xpText, { color: colors.primary }]}>
+            <Text style={[styles.xpText, { color: colors.primary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               {topic.currentXp}/{topic.totalXp} XP
             </Text>
           </View>
           <ProgressBar 
             progress={progress} 
-            height={scale(8)}
-            color={isCompleted ? '#4CAF50' : colors.primary}
+            height={scale(6)}
+            gradientColors={isCompleted ? [colors.success, colors.success] : [colors.primary, colors.primaryDim]}
             showLabel={false}
           />
         </View>
@@ -162,14 +167,12 @@ const HomeScreen = () => {
 
   if (isLoading) {
     return (
-      <PageContainer contentContainerStyle={{ paddingVertical: scale(24) }}>
-        {/* Header Skeleton */}
+      <PageContainer contentContainerStyle={{ paddingVertical: scale(32) }}>
         <View style={styles.header}>
           <Skeleton width={scale(200)} height={scale(32)} style={{ marginBottom: scale(8) }} />
           <Skeleton width={scale(150)} height={scale(16)} />
         </View>
 
-        {/* Stats Skeleton */}
         <View style={styles.statsContainer}>
           {[1, 2, 3].map((i) => (
             <Skeleton 
@@ -181,7 +184,6 @@ const HomeScreen = () => {
           ))}
         </View>
 
-        {/* Sections Skeleton */}
         {[1, 2].map((section) => (
           <View key={section} style={styles.section}>
             <Skeleton width={scale(140)} height={scale(24)} style={{ marginBottom: scale(16) }} />
@@ -190,7 +192,7 @@ const HomeScreen = () => {
                 key={card}
                 style={styles.card} 
                 height={scale(120)} 
-                borderRadius={scale(16)} 
+                borderRadius={scale(12)} 
               />
             ))}
           </View>
@@ -202,7 +204,7 @@ const HomeScreen = () => {
   return (
     <>
       <PageContainer
-        contentContainerStyle={{ paddingVertical: scale(24) }}
+        contentContainerStyle={{ paddingVertical: scale(32) }}
         refreshControl={
           <RefreshControl 
             refreshing={isLoading} 
@@ -213,49 +215,73 @@ const HomeScreen = () => {
         }
       >
         <View style={styles.header}>
-          <Text style={[styles.greeting, { color: colors.text }]}>
-            Hello, {userProfile?.name || 'Learner'}! 👋
-          </Text>
-          <Text style={{ ...styles.subtitle, color: colors.text }}>
-            {userProgress?.topicsCompleted} of {userProgress?.totalTopics} topics completed
-          </Text>
+          <LinearGradient
+            colors={[isDark ? 'rgba(139, 172, 255, 0.12)' : 'rgba(0, 108, 251, 0.08)', 'transparent']}
+            style={styles.headerGlow}
+          />
+          <View style={styles.headerContent}>
+            <Text style={[styles.greeting, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
+              Hello, {userProfile?.name || 'Learner'}! 👋
+            </Text>
+            <View style={styles.missionLevelContainer}>
+              <View style={[styles.levelBadge, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.levelText, { color: colors.onPrimary || '#FFF', fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
+                  LVL {Math.floor((userProgress?.totalXP || 0) / 1000) + 1}
+                </Text>
+              </View>
+              <View style={styles.levelProgressWrapper}>
+                <ProgressBar 
+                  progress={((userProgress?.totalXP || 0) % 1000) / 1000} 
+                  height={scale(6)}
+                  gradientColors={[colors.primary, colors.primaryDim]}
+                  showLabel={false}
+                />
+              </View>
+            </View>
+            <View style={styles.subtitleContainer}>
+              <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+              <Text style={{ ...styles.subtitle, color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }}>
+                {userProgress?.topicsCompleted} of {userProgress?.totalTopics} topics archived
+              </Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.statsContainer}>
-          <Card variant="filled" style={{ ...styles.statCard, backgroundColor: `${colors.primary}10` }}>
-            <Text style={{ ...styles.statValue, color: colors.primary }}>
+          <Card variant="filled" style={StyleSheet.flatten([styles.statCard, { backgroundColor: colors.surfaceContainer }])}>
+            <Text style={[styles.statValue, { color: colors.primary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               {userProgress?.topicsCompleted || 0}
             </Text>
-            <Text style={{ ...styles.statLabel, color: colors.text }}>Topic{userProgress?.topicsCompleted !== 1 ? 's' : ''}</Text>
+            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>Topics</Text>
           </Card>
           
-          <Card variant="filled" style={{ ...styles.statCard, backgroundColor: `${colors.secondary}10` }}>
-            <Text style={{ ...styles.statValue, color: colors.secondary }}>
+          <Card variant="filled" style={StyleSheet.flatten([styles.statCard, { backgroundColor: colors.surfaceContainer }])}>
+            <Text style={[styles.statValue, { color: colors.primary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               {userProgress?.totalXP || 0}
             </Text>
-            <Text style={{ ...styles.statLabel, color: colors.text }}>XP</Text>
+            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>XP</Text>
           </Card>
           
-          <Card variant="filled" style={{ ...styles.statCard, backgroundColor: '#FFC10710' }}>
-            <Text style={{ ...styles.statValue, color: '#FFC107' }}>
+          <Card variant="filled" style={StyleSheet.flatten([styles.statCard, { backgroundColor: colors.surfaceContainerHigh }])}>
+            <Text style={[styles.statValue, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               {streakData?.currentStreak || 0} 🔥
             </Text>
-            <Text style={{ ...styles.statLabel, color: colors.text }}>Day Streak</Text>
+            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>Streak</Text>
           </Card>
         </View>
 
         {inProgressTopics.length > 0 && (
           <View style={styles.section}>
-            <Text style={{ ...styles.sectionTitle, color: colors.text }}>
-              Continue Learning
+            <Text style={[styles.sectionTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
+              Continue Mission
             </Text>
             {inProgressTopics.map(renderTopicCard)}
           </View>
         )}
 
         <View style={styles.section}>
-          <Text style={{ ...styles.sectionTitle, color: colors.text }}>
-            {inProgressTopics.length > 0 ? 'All Topics' : 'Available Topics'}
+          <Text style={[styles.sectionTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
+            {inProgressTopics.length > 0 ? 'Archive Library' : 'Available Knowledge'}
           </Text>
           {topics
             .filter(topic => !topic.isLocked)
@@ -263,7 +289,6 @@ const HomeScreen = () => {
         </View>
       </PageContainer>
 
-      {/* Streak Restore Modal */}
       <StreakRestoreModal
         isVisible={showStreakModal}
         onClose={() => setShowStreakModal(false)}
@@ -276,74 +301,112 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create<Styles>({
-  container: {
-    flex: 1,
-    padding: scale(16),
-  },
-  contentContainer: {
-    paddingBottom: scale(80),
-  },
   header: {
-    marginBottom: scale(24),
+    marginBottom: scale(32),
+    paddingHorizontal: scale(4),
+    position: 'relative',
+    paddingVertical: scale(20),
+    minHeight: scale(160),
+  },
+  headerGlow: {
+    ...StyleSheet.absoluteFillObject,
+    height: scale(250),
+    top: -scale(80),
+    left: -scale(60),
+    right: -scale(60),
+    opacity: 0.8,
+  },
+  headerContent: {
+    zIndex: 2,
   },
   greeting: {
-    fontSize: responsiveFontSize(28),
-    fontWeight: 'bold',
-    marginBottom: scale(4),
+    fontSize: responsiveFontSize(36),
+    letterSpacing: -1.5,
+    marginBottom: scale(12),
+  },
+  missionLevelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: scale(16),
+    gap: scale(12),
+  },
+  levelBadge: {
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(4),
+    borderRadius: scale(8),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  levelText: {
+    fontSize: responsiveFontSize(12),
+    letterSpacing: 0.5,
+  },
+  levelProgressWrapper: {
+    flex: 1,
+    maxWidth: scale(180),
+  },
+  subtitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: scale(8),
+    height: scale(8),
+    borderRadius: scale(4),
+    marginRight: scale(8),
   },
   subtitle: {
     fontSize: responsiveFontSize(14),
-    opacity: 0.8,
+    opacity: 0.9,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: scale(20),
+    marginBottom: scale(40),
   },
   statCard: {
     flex: 1,
     marginHorizontal: scale(4),
-    padding: scale(12),
+    padding: scale(16),
     alignItems: 'center',
+    justifyContent: 'center',
   },
   statValue: {
-    fontSize: responsiveFontSize(20),
-    fontWeight: 'bold',
-    marginBottom: scale(4),
+    fontSize: responsiveFontSize(24),
+    marginBottom: scale(2),
   },
   statLabel: {
-    fontSize: responsiveFontSize(12),
-    opacity: 0.8,
+    fontSize: responsiveFontSize(10),
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   section: {
-    marginBottom: scale(24),
+    marginBottom: scale(32),
   },
   sectionTitle: {
     fontSize: responsiveFontSize(18),
-    fontWeight: '600',
-    marginBottom: scale(12),
+    marginBottom: scale(16),
+    paddingHorizontal: scale(4),
   },
   card: {
     marginBottom: scale(16),
-    padding: scale(16),
+    padding: scale(20),
   },
   topicHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: scale(12),
+    marginBottom: scale(16),
   },
   topicInfo: {
     flex: 1,
   },
   topicTitle: {
-    fontSize: responsiveFontSize(16),
-    fontWeight: '600',
-    marginBottom: scale(4),
+    fontSize: responsiveFontSize(17),
+    marginBottom: scale(2),
   },
   topicCategory: {
-    fontSize: responsiveFontSize(14),
-    opacity: 0.7,
+    fontSize: responsiveFontSize(13),
   },
   progressContainer: {
     marginTop: scale(8),
@@ -351,14 +414,13 @@ const styles = StyleSheet.create<Styles>({
   progressTextContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: scale(8),
+    marginBottom: scale(10),
   },
   progressText: {
-    fontSize: responsiveFontSize(14),
+    fontSize: responsiveFontSize(12),
   },
   xpText: {
     fontSize: responsiveFontSize(12),
-    fontWeight: '600',
   },
 });
 

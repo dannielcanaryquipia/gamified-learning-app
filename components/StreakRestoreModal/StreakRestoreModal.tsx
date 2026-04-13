@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors } from '../../contexts/ThemeContext';
 
@@ -29,47 +30,54 @@ const StreakRestoreModal: React.FC<StreakRestoreModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}>
-        <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+        <View style={[styles.modalContent, { backgroundColor: isDark ? colors.surfaceContainerLow : colors.surface }]}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>
+            <Text style={[styles.title, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               🔥 Keep Your Streak Alive!
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={scale(24)} color={colors.text} />
+              <MaterialIcons name="close" size={scale(20)} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
           
           <View style={styles.streakContainer}>
-            <Text style={[styles.streakCount, { color: colors.primary }]}>
-              {streakCount} days
+            <Text style={[styles.streakCount, { color: colors.primary, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>
+              {streakCount} {streakCount === 1 ? 'day' : 'days'}
             </Text>
-            <Text style={[styles.streakLabel, { color: colors.text }]}>
+            <Text style={[styles.streakLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
               Current Streak
             </Text>
           </View>
 
-          <Text style={[styles.message, { color: colors.text }]}>
+          <Text style={[styles.message, { color: colors.onSurface, fontFamily: 'Manrope_500Medium' }]}>
             {streakCount > 1 
-              ? `You're on a ${streakCount}-day streak! Keep it going!`
-              : 'Start your learning journey today!'}
+              ? `You're on an incredible ${streakCount}-day streak! Maintain the momentum and capture new knowledge today.`
+              : 'The Cosmic Archive awaits. Start your learning journey today and begin your legacy.'}
           </Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={[styles.button, { backgroundColor: colors.primary }]}
+              activeOpacity={0.8}
               onPress={onRestore}
             >
-              <Text style={styles.buttonText}>
-                {streakCount > 1 ? 'Continue My Streak' : 'Start Learning'}
-              </Text>
+              <LinearGradient
+                colors={[colors.primary, colors.primaryDim]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.button}
+              >
+                <Text style={[styles.buttonText, { fontFamily: 'PlusJakartaSans_700Bold' }]}>
+                  {streakCount > 1 ? 'Continue Mission' : 'Initialize Learning'}
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
             
-            {streakCount > 0 && (
+            {streakCount >= 0 && (
               <TouchableOpacity 
                 style={styles.secondaryButton}
                 onPress={onClose}
               >
-                <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
+                <Text style={[styles.secondaryButtonText, { color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }]}>
                   View My Progress
                 </Text>
               </TouchableOpacity>
@@ -86,59 +94,74 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: scale(20),
+    padding: scale(24),
   },
   modalContent: {
     width: '100%',
-    borderRadius: scale(16),
-    padding: scale(20),
-    maxWidth: scale(400),
+    borderRadius: scale(20),
+    padding: scale(24),
+    maxWidth: scale(360),
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 20px 50px rgba(0, 0, 0, 0.6)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(10) },
+        shadowOpacity: 0.5,
+        shadowRadius: scale(20),
+        elevation: 10,
+      }
+    })
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: scale(20),
+    marginBottom: scale(24),
   },
   title: {
-    fontSize: responsiveFontSize(20),
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(18),
     flex: 1,
   },
   closeButton: {
-    padding: scale(4),
+    padding: scale(6),
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: scale(8),
   },
   streakContainer: {
     alignItems: 'center',
-    marginVertical: scale(20),
+    marginVertical: scale(24),
   },
   streakCount: {
-    fontSize: responsiveFontSize(48),
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(42),
+    letterSpacing: -1,
   },
   streakLabel: {
-    fontSize: responsiveFontSize(16),
+    fontSize: responsiveFontSize(13),
     marginTop: scale(4),
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   message: {
-    fontSize: responsiveFontSize(16),
+    fontSize: responsiveFontSize(15),
     textAlign: 'center',
-    marginBottom: scale(24),
-    lineHeight: responsiveFontSize(24),
+    marginBottom: scale(32),
+    lineHeight: responsiveFontSize(22),
+    opacity: 0.9,
   },
   buttonContainer: {
     width: '100%',
   },
   button: {
     padding: scale(16),
-    borderRadius: scale(12),
+    borderRadius: scale(30), // Pill shaped buttons as per design system
     alignItems: 'center',
     marginBottom: scale(12),
   },
   buttonText: {
     color: 'white',
     fontSize: responsiveFontSize(16),
-    fontWeight: '600',
   },
   secondaryButton: {
     padding: scale(16),
@@ -146,7 +169,6 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     fontSize: responsiveFontSize(14),
-    fontWeight: '500',
   },
 });
 

@@ -1,7 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View, Platform } from 'react-native';
+import { Animated, StyleSheet, Text, View, Platform, TouchableOpacity } from 'react-native';
 import { useApp } from '../../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../../contexts/ThemeContext';
 import { fetchTopics } from '../../../services/mockData';
@@ -12,6 +12,7 @@ import LoadingOverlay from '../../../components/LoadingOverlay/LoadingOverlay';
 import Skeleton from '../../../components/Skeleton/Skeleton';
 import { scale, responsiveFontSize, getScreenDimensions } from '../../../constants/responsive';
 import { useLoadingOverlay } from '../../../hooks/useLoadingOverlay';
+import ProgressBar from '../../../components/ProgressBar/ProgressBar';
 
 export default function NestedLessonScreen() {
   const { isDark } = useTheme();
@@ -59,7 +60,6 @@ export default function NestedLessonScreen() {
     loadLesson();
   }, [topicId, lessonId]);
 
-  // Wide screen auto-enable logic
   useEffect(() => {
     if (!isLoading && lesson && isWideScreen && !isAtBottom) {
       setIsAtBottom(true);
@@ -76,24 +76,16 @@ export default function NestedLessonScreen() {
   };
 
   const handleScroll = (event: any) => {
-    // Only use scroll logic on mobile/small screens
     if (isWideScreen) return;
 
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
+    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
     
     if (isCloseToBottom && !isAtBottom) {
       setIsAtBottom(true);
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 300,
-        useNativeDriver: Platform.OS !== 'web',
-      }).start();
-    } else if (!isCloseToBottom && isAtBottom && !isCompleted) {
-      setIsAtBottom(false);
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
+        duration: 400,
         useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
@@ -103,7 +95,7 @@ export default function NestedLessonScreen() {
     if (!topicId || !lessonId || isCompleted || isRedirecting) return;
     
     try {
-      showLoading('Marking lesson complete...');
+      showLoading('Capturing Knowledge...');
       await markLessonComplete(topicId, lessonId);
       setIsCompleted(true);
       
@@ -121,26 +113,18 @@ export default function NestedLessonScreen() {
   if (isLoading) {
     return (
       <PageContainer style={{ backgroundColor: colors.background }}>
-        {/* Header Skeleton */}
         <View style={styles.header}>
-          <Skeleton width={scale(40)} height={scale(32)} style={{ marginRight: scale(16) }} />
+          <Skeleton width={scale(40)} height={scale(40)} borderRadius={scale(20)} style={{ marginRight: scale(16) }} />
           <View style={styles.headerContent}>
-            <Skeleton width={scale(200)} height={scale(28)} style={{ marginBottom: scale(8) }} />
-            <Skeleton width={scale(150)} height={scale(16)} />
+            <Skeleton width={scale(240)} height={scale(32)} style={{ marginBottom: scale(8) }} />
+            <Skeleton width={scale(180)} height={scale(16)} />
           </View>
         </View>
-
-        {/* Content Skeleton */}
-        <View style={{ marginTop: scale(20) }}>
-          <Skeleton width="100%" height={scale(18)} style={{ marginBottom: scale(12) }} />
-          <Skeleton width="95%" height={scale(18)} style={{ marginBottom: scale(12) }} />
-          <Skeleton width="100%" height={scale(18)} style={{ marginBottom: scale(12) }} />
-          <Skeleton width="60%" height={scale(18)} style={{ marginBottom: scale(40) }} />
-
-          <Skeleton width="100%" height={scale(180)} borderRadius={scale(12)} style={{ marginBottom: scale(40) }} />
-
-          <Skeleton width="100%" height={scale(18)} style={{ marginBottom: scale(12) }} />
-          <Skeleton width="90%" height={scale(18)} style={{ marginBottom: scale(12) }} />
+        <View style={{ marginTop: scale(32) }}>
+          <Skeleton width="100%" height={scale(20)} style={{ marginBottom: scale(16) }} />
+          <Skeleton width="95%" height={scale(20)} style={{ marginBottom: scale(16) }} />
+          <Skeleton width="40%" height={scale(20)} style={{ marginBottom: scale(40) }} />
+          <Skeleton width="100%" height={scale(280)} borderRadius={scale(16)} style={{ marginBottom: scale(32) }} />
         </View>
       </PageContainer>
     );
@@ -150,11 +134,11 @@ export default function NestedLessonScreen() {
     return (
       <PageContainer>
         <View style={styles.centerContainer}>
-          <MaterialIcons name="error-outline" size={scale(48)} color="#FF5252" />
-          <Text style={[styles.errorText, { color: colors.text }]}>Lesson not found</Text>
-          <Text style={[styles.errorSubtext, { color: colors.text }]}>
-            The lesson was not found in {topicTitle}
-          </Text>
+          <MaterialIcons name="report-problem" size={scale(48)} color={colors.error} />
+          <Text style={[styles.errorText, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>Knowledge Link Broken</Text>
+          <TouchableOpacity onPress={handleBack} style={{ marginTop: scale(20) }}>
+            <Text style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Return to Archives</Text>
+          </TouchableOpacity>
         </View>
       </PageContainer>
     );
@@ -162,98 +146,129 @@ export default function NestedLessonScreen() {
 
   return (
     <>
-      <LoadingOverlay visible={isRedirecting} message="Marking lesson complete..." />
+      <LoadingOverlay visible={isRedirecting} message="Integrating knowledge..." />
       <PageContainer
         scrollable={true}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        contentContainerStyle={styles.pageContent}
       >
+        <ProgressBar 
+          progress={isCompleted ? 1 : 0.5} 
+          height={scale(3)} 
+          gradientColors={[colors.primary, colors.primaryDim]}
+          style={styles.topProgress}
+          showLabel={false}
+        />
+        
         <View style={styles.header}>
-          <MaterialIcons 
-            name="arrow-back" 
-            size={scale(24)} 
-            color={colors.text} 
+          <TouchableOpacity 
             onPress={handleBack}
-            style={styles.backButton}
-          />
+            style={[styles.backButton, { backgroundColor: colors.surfaceContainerLow }]}
+          >
+            <MaterialIcons name="close" size={scale(20)} color={colors.onSurfaceVariant} />
+          </TouchableOpacity>
           <View style={styles.headerContent}>
-            <Text style={[styles.title, { color: colors.text }]}>{lesson.title}</Text>
+            <Text style={[styles.title, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>{lesson.title}</Text>
             <View style={styles.meta}>
-              <Text style={[styles.duration, { color: colors.text }]}>
-                <MaterialIcons name="schedule" size={scale(14)} /> {lesson.duration} min
-              </Text>
-              <Text style={[styles.xp, { color: colors.primary }]}>
-                <MaterialIcons name="star" size={scale(14)} /> {lesson.xp} XP
-              </Text>
+              <View style={styles.metaItem}>
+                <MaterialIcons name="hourglass-top" size={scale(12)} color={colors.onSurfaceVariant} />
+                <Text style={[styles.metaText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_600SemiBold' }]}>
+                  {lesson.duration} min
+                </Text>
+              </View>
+              <View style={styles.metaDivider} />
+              <View style={styles.metaItem}>
+                <MaterialIcons name="stars" size={scale(12)} color={colors.tertiary} />
+                <Text style={[styles.metaText, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>
+                  {lesson.xp} XP
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
-        <LessonContent 
-          content={lesson.content}
-          description={lesson.description}
-          isCompleted={isCompleted}
-          isLoading={isRedirecting}
-          onComplete={handleMarkAsCompleted}
-          showCompleteButton={isAtBottom || isCompleted}
-          fadeAnim={fadeAnim}
-        />
+        <View style={styles.lessonContainer}>
+          <LessonContent 
+            content={lesson.content}
+            description={lesson.description}
+            isCompleted={isCompleted}
+            isLoading={isRedirecting}
+            onComplete={handleMarkAsCompleted}
+            showCompleteButton={isAtBottom || isCompleted}
+            fadeAnim={fadeAnim}
+          />
+        </View>
       </PageContainer>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  pageContent: {
+    paddingBottom: scale(100),
+  },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: scale(20),
-  },
-  loadingText: {
-    fontSize: responsiveFontSize(16),
+    padding: scale(40),
   },
   errorText: {
     fontSize: responsiveFontSize(18),
-    fontWeight: '600',
     marginTop: scale(16),
   },
-  errorSubtext: {
-    fontSize: responsiveFontSize(14),
-    opacity: 0.7,
-    marginTop: scale(8),
-    textAlign: 'center',
+  topProgress: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: scale(16),
-    marginBottom: scale(16),
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingVertical: scale(20),
+    marginTop: scale(8),
+    marginBottom: scale(24),
   },
   backButton: {
+    width: scale(36),
+    height: scale(36),
+    borderRadius: scale(18),
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: scale(16),
-    padding: scale(4),
   },
   headerContent: {
     flex: 1,
   },
   title: {
-    fontSize: responsiveFontSize(22),
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(20),
     marginBottom: scale(4),
+    letterSpacing: -0.3,
   },
   meta: {
     flexDirection: 'row',
-    gap: scale(16),
+    alignItems: 'center',
   },
-  duration: {
-    fontSize: responsiveFontSize(14),
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(4),
+  },
+  metaText: {
+    fontSize: responsiveFontSize(12),
     opacity: 0.8,
   },
-  xp: {
-    fontSize: responsiveFontSize(14),
-    fontWeight: '600',
+  metaDivider: {
+    width: scale(4),
+    height: scale(4),
+    borderRadius: scale(2),
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: scale(12),
+  },
+  lessonContainer: {
+    width: '100%',
   },
 });

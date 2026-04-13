@@ -1,15 +1,15 @@
 import React, { ReactNode } from 'react';
-import { Platform, StyleSheet, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, TouchableOpacityProps, View, ViewStyle, StyleProp } from 'react-native';
 import { scale } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 
-type CardVariant = 'elevated' | 'outlined' | 'filled' | 'ghost';
+type CardVariant = 'elevated' | 'outlined' | 'filled' | 'ghost' | 'cosmic';
 
 interface CardProps extends TouchableOpacityProps {
   children: ReactNode;
   variant?: CardVariant;
-  style?: ViewStyle;
-  contentContainerStyle?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  contentContainerStyle?: StyleProp<ViewStyle>;
   onPress?: () => void;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -32,17 +32,17 @@ const Card: React.FC<CardProps> = ({
   
   const cardStyles = {
     elevated: {
-      backgroundColor: colors.card,
+      backgroundColor: isDark ? colors.surfaceContainerLow : colors.surface,
       ...Platform.select({
         web: {
-          boxShadow: `0px 2px 8px ${colors.text}1A`,
+          boxShadow: isDark ? '0px 10px 30px rgba(0, 0, 0, 0.5)' : `0px 4px 12px rgba(63, 69, 108, 0.08)`,
         },
         default: {
-          shadowColor: colors.text,
-          shadowOffset: { width: 0, height: scale(2) },
-          shadowOpacity: 0.1,
-          shadowRadius: scale(4),
-          elevation: 3,
+          shadowColor: isDark ? '#000' : colors.onSurface,
+          shadowOffset: { width: 0, height: scale(8) },
+          shadowOpacity: isDark ? 0.4 : 0.05,
+          shadowRadius: scale(16),
+          elevation: isDark ? 0 : 2, 
         },
       }),
       borderWidth: 0,
@@ -50,23 +50,27 @@ const Card: React.FC<CardProps> = ({
     outlined: {
       backgroundColor: 'transparent',
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: colors.outlineVariant,
     },
     filled: {
-      backgroundColor: isDark ? colors.surface : colors.card,
+      backgroundColor: isDark ? colors.surfaceContainer : colors.surfaceContainerLow,
       borderWidth: 0,
     },
     ghost: {
       backgroundColor: 'transparent',
       borderWidth: 0,
     },
-  }[variant];
+    cosmic: {
+      backgroundColor: isDark ? colors.surfaceContainerHighest : colors.surfaceContainerHigh,
+      borderWidth: 0,
+    }
+  }[variant] || { backgroundColor: colors.surfaceContainerLow };
 
   const Container = onPress ? TouchableOpacity : View;
   const containerProps = onPress 
     ? { 
         onPress: disabled ? undefined : onPress, 
-        activeOpacity: 0.7,
+        activeOpacity: 0.85,
         disabled,
         testID,
         ...rest 
@@ -95,7 +99,7 @@ const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: scale(16),
+    borderRadius: scale(12), // Cosmic Archive rule: 12px corner radius for cards
     overflow: 'hidden',
   },
   content: {

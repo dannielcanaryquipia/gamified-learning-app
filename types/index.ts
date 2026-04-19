@@ -32,6 +32,7 @@ export interface Topic {
   completedLessons: number;
   xp: number;
   category: string;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
   isLocked: boolean;
   lastAccessed?: Date;
   lessons: Lesson[];
@@ -44,6 +45,10 @@ export interface UserProgress {
   streak: number;
   topicsCompleted: number;
   totalTopics: number;
+  lessonsCompleted: number;
+  quizzesPassed: number;
+  perfectQuizzes: number;
+  totalLessons: number;
 }
 
 export interface UserProfile {
@@ -57,4 +62,15 @@ export interface UserProfile {
     theme: 'light' | 'dark' | 'system';
     notifications: boolean;
   };
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Artifact';
+  unlocked: boolean;
+  date?: string;
+  condition: string; // human readable condition description
 }

@@ -84,6 +84,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
         if (route.name === 'index') {
             iconName = isFocused ? 'home-sharp' : 'home-outline';
             label = 'Home';
+        } else if (route.name === 'quizzes') {
+            iconName = isFocused ? 'flask' : 'flask-outline';
+            label = 'Quizzes';
         } else if (route.name === 'missions') {
             iconName = isFocused ? 'rocket-sharp' : 'rocket-outline';
             label = 'Missions';

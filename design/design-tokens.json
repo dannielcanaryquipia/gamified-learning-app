@@ -1,32 +1,105 @@
 {
+  "name": "Cosmic Archive",
+  "version": "2.0.0",
   "colors": {
-    "primary": "#0B6FFF",
-    "accent": "#FFB84D",
-    "success": "#2ECC71",
-    "background": {
-      "light": "#FFFFFF",
-      "dark": "#121212"
+    "core": {
+      "background": { "light": "#FFFFFF", "dark": "#040a2f" },
+      "surface": { "light": "#FFFFFF", "dark": "#040a2f" },
+      "surfaceContainerLow": { "light": "#e2e3ff", "dark": "#080e38" },
+      "surfaceContainer": { "light": "#d7d9ff", "dark": "#0d1542" },
+      "surfaceContainerHigh": { "light": "#cccefc", "dark": "#121a4c" },
+      "surfaceContainerHighest": { "light": "#c2c4f9", "dark": "#182056" },
+      "surfaceBright": { "light": "#fbf8ff", "dark": "#1d2660" },
+      "onSurface": { "light": "#040a2f", "dark": "#e2e3ff" },
+      "onSurfaceVariant": { "light": "#4d527a", "dark": "#a3a8d5" },
+      "outlineVariant": { "light": "rgba(63, 69, 108, 0.15)", "dark": "rgba(63, 73, 157, 0.15)" }
     },
-    "text": {
-      "light": "#000000",
-      "dark": "#FFFFFF"
+    "primary": {
+      "base": "#8bacff",
+      "dim": "#006cfb",
+      "container": "#759eff",
+      "onPrimary": "#FFFFFF"
+    },
+    "gamification": {
+      "secondary": "#cad6fd",
+      "tertiary": "#ffc565",
+      "success": "#2ECC71",
+      "error": "#ff716c"
+    },
+    "utility": {
+      "notification": "#ff716c",
+      "disabled": { "light": "#D1D5DB", "dark": "#3f456c" },
+      "placeholder": { "light": "#9CA3AF", "dark": "#6d739d" },
+      "backdrop": "rgba(0, 0, 0, 0.5)",
+      "modalOverlay": { "light": "rgba(255, 255, 255, 0.85)", "dark": "rgba(4, 10, 47, 0.85)" },
+      "codeBackground": { "light": "#f5f5f5", "dark": "#0d1542" },
+      "trackBackground": { "light": "#E0E0E0", "dark": "#000000" },
+      "skeletonBackground": { "light": "#e1e1e1", "dark": "#121a4c" },
+      "shadow": "#000000",
+      "white": "#FFFFFF"
     }
   },
   "typography": {
-    "fontFamily": "Inter",
-    "sizes": {
-      "h1": 32,
-      "h2": 24,
-      "body": 16,
-      "caption": 12
+    "display": {
+      "fontFamily": "PlusJakartaSans_800ExtraBold",
+      "sizes": { "xl": 42, "lg": 32, "md": 22 },
+      "letterSpacing": -1.5
+    },
+    "heading": {
+      "fontFamily": "PlusJakartaSans_700Bold",
+      "sizes": { "lg": 18, "md": 16, "sm": 14 }
+    },
+    "body": {
+      "fontFamily": "Manrope_400Regular",
+      "sizes": { "lg": 17, "md": 15, "sm": 13, "xs": 11 },
+      "lineHeight": 1.65
+    },
+    "label": {
+      "fontFamily": "Manrope_700Bold",
+      "sizes": { "md": 11, "sm": 10, "xs": 9 },
+      "letterSpacing": 1.5
+    },
+    "mono": {
+      "fontFamily": "SpaceMono"
     }
   },
   "shapes": {
-    "borderRadius": 12,
-    "buttonPadding": 16
+    "borderRadius": {
+      "xs": 8,
+      "sm": 12,
+      "md": 16,
+      "lg": 20,
+      "xl": 24,
+      "xxl": 28,
+      "pill": 36,
+      "circle": 9999
+    }
   },
-  "layout": {
-    "navBarHeight": 56,
-    "spacingScaling": 4
+  "spacing": {
+    "unit": 4,
+    "scale": [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80]
+  },
+  "elevation": {
+    "low": {
+      "shadowColor": "#000",
+      "shadowOffset": { "width": 0, "height": 2 },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 4,
+      "elevation": 2
+    },
+    "medium": {
+      "shadowColor": "#000",
+      "shadowOffset": { "width": 0, "height": 6 },
+      "shadowOpacity": 0.25,
+      "shadowRadius": 16,
+      "elevation": 8
+    },
+    "high": {
+      "shadowColor": "#0b6fff",
+      "shadowOffset": { "width": 0, "height": 12 },
+      "shadowOpacity": 0.4,
+      "shadowRadius": 14,
+      "elevation": 10
+    }
   }
 }

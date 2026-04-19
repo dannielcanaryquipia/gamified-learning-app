@@ -105,6 +105,13 @@ export const isPortrait = () => {
   return height >= width;
 };
 
+export const isLandscape = (width?: number, height?: number) => {
+  const dims = Dimensions.get('window');
+  const w = width ?? dims.width;
+  const h = height ?? dims.height;
+  return w > h;
+};
+
 export const isTablet = () => {
   const { width, height } = Dimensions.get('window');
   const aspectRatio = height / width;

@@ -3,6 +3,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import BackButton from '../../components/BackButton/BackButton';
 import Card from '../../components/Card/Card';
 import ProgressBar from '../../components/ProgressBar/ProgressBar';
 import PageContainer from '../../components/PageContainer/PageContainer';
@@ -126,12 +127,7 @@ export default function TopicScreen() {
   return (
     <PageContainer contentContainerStyle={styles.contentContainer}>
       {/* Back Navigation */}
-      <TouchableOpacity 
-        onPress={() => router.back()}
-        style={[styles.backBtn, { backgroundColor: colors.surfaceContainerHighest }]}
-      >
-        <MaterialIcons name="chevron-left" size={scale(24)} color={colors.onSurface} />
-      </TouchableOpacity>
+      <BackButton variant="circle" style={styles.backBtn} onPress={() => router.back()} />
 
       {/* Atmospheric Header */}
       <View style={styles.header}>

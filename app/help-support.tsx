@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import BackButton from '../components/BackButton/BackButton';
 import { scale, responsiveFontSize } from '../constants/responsive';
 import { getThemeColors, useTheme } from '../contexts/ThemeContext';
 import PageContainer from '../components/PageContainer/PageContainer';
@@ -59,10 +60,8 @@ export default function HelpSupportScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <MaterialIcons name="arrow-back" size={scale(24)} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Help & Support</Text>
+        <BackButton variant="inline" style={styles.backButton} onPress={() => router.back()} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{'Help & Support'}</Text>
       </View>
 
       <View style={styles.section}>

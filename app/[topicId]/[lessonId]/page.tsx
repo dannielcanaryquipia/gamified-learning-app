@@ -6,6 +6,7 @@ import { useApp } from '../../../contexts/AppContext';
 import { getThemeColors, useTheme } from '../../../contexts/ThemeContext';
 import { fetchTopics } from '../../../services/mockData';
 import { Lesson } from '../../../types';
+import BackButton from '../../../components/BackButton/BackButton';
 import PageContainer from '../../../components/PageContainer/PageContainer';
 import LessonContent from '../../../components/LessonContent/LessonContent';
 import LoadingOverlay from '../../../components/LoadingOverlay/LoadingOverlay';
@@ -123,15 +124,18 @@ export default function NestedLessonScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <LoadingOverlay visible={isRedirecting} message="Integrating knowledge..." />
       
-      {/* Floating Glass Header */}
-      <Animated.View style={[
-        styles.floatingHeader, 
-        { 
-          backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-          borderBottomColor: colors.surfaceContainerHighest,
-          opacity: headerOpacity
-        }
-      ]}>
+      {/* Floating Glass Header — pointerEvents="none" so it never blocks touches below */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.floatingHeader, 
+          { 
+            backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+            borderBottomColor: colors.surfaceContainerHighest,
+            opacity: headerOpacity
+          }
+        ]}
+      >
           <Text style={[styles.floatingTitle, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]} numberOfLines={1}>
             {lesson.title}
           </Text>
@@ -145,12 +149,13 @@ export default function NestedLessonScreen() {
       >
         {/* Top Navigation Row */}
         <View style={styles.topNav}>
-          <TouchableOpacity 
+          <BackButton
+            variant="circle"
+            icon="arrow-back"
+            style={styles.backBtn}
+            size={scale(20)}
             onPress={() => router.back()}
-            style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow }]}
-          >
-            <MaterialIcons name="close" size={scale(20)} color={colors.onSurface} />
-          </TouchableOpacity>
+          />
           <View style={styles.breadCrumb}>
              <Text style={[styles.breadText, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>{topicTitle.toUpperCase()}</Text>
              <MaterialIcons name="chevron-right" size={scale(14)} color={colors.onSurfaceVariant} opacity={0.5} />
@@ -224,11 +229,9 @@ const styles = StyleSheet.create({
     gap: scale(16),
   },
   backBtn: {
-    width: scale(36),
-    height: scale(36),
-    borderRadius: scale(12),
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: scale(44),
+    height: scale(44),
+    borderRadius: scale(14),
   },
   breadCrumb: {
     flexDirection: 'row',

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Animated, Platform } from 'react-native';
+import { StyleSheet, Text, View, Platform, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 import OptionPill from './OptionPill';
 import { LinearGradient } from 'expo-linear-gradient';
-import { TouchableOpacity } from 'react-native';
+
 
 export interface QuizQuestionData {
   id: string;
@@ -40,6 +40,14 @@ const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward
     if (index === currentQuestion.correctIndex) {
       setScore(prev => prev + 1);
     }
+  };
+
+  const handleRetry = () => {
+    setCurrentIndex(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setScore(0);
+    setShowResults(false);
   };
 
   const nextQuestion = () => {
@@ -88,10 +96,12 @@ const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward
            </View>
         </View>
 
-        <TouchableOpacity 
-          activeOpacity={0.8}
-          onPress={() => onComplete(score)}
-          style={styles.finalBtnWrapper}
+        <Pressable 
+          onPress={passed ? () => onComplete(score) : handleRetry}
+          style={({ pressed }) => [
+            styles.finalBtnWrapper,
+            { opacity: pressed ? 0.8 : 1 }
+          ]}
         >
           <LinearGradient
             colors={passed ? [colors.success, colors.success] : [colors.primary, colors.primaryDim]}
@@ -100,8 +110,13 @@ const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward
             <Text style={[styles.finalBtnText, { color: 'white', fontFamily: 'PlusJakartaSans_700Bold' }]}>
               {passed ? 'CLOSE TRANSMISSION' : 'RETRY EVALUATION'}
             </Text>
+            <MaterialIcons 
+              name={passed ? 'check-circle' : 'refresh'} 
+              size={scale(18)} 
+              color="white" 
+            />
           </LinearGradient>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     );
   }
@@ -144,17 +159,20 @@ const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward
       </View>
 
       {isAnswered && (
-        <Animated.View style={styles.nextBtnWrapper}>
-           <TouchableOpacity 
+        <View style={styles.nextBtnWrapper}>
+           <Pressable 
             onPress={nextQuestion}
-            style={[styles.nextBtn, { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [
+              styles.nextBtn, 
+              { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
+            ]}
            >
               <Text style={[styles.nextBtnText, { color: 'white', fontFamily: 'PlusJakartaSans_700Bold' }]}>
                 {currentIndex < questions.length - 1 ? 'NEXT EVALUATION' : 'FINALIZE SYNC'}
               </Text>
               <MaterialIcons name="arrow-forward" size={scale(18)} color="white" />
-           </TouchableOpacity>
-        </Animated.View>
+           </Pressable>
+        </View>
       )}
     </View>
   );
@@ -271,6 +289,9 @@ const styles = StyleSheet.create({
     paddingVertical: scale(18),
     borderRadius: scale(16),
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: scale(10),
     ...Platform.select({
       web: { boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }
     })

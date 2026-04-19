@@ -1,36 +1,59 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Animated, Platform, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { scale, responsiveFontSize } from '../constants/responsive';
-import { getThemeColors, useTheme } from '../contexts/ThemeContext';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import BackButton from '../components/BackButton/BackButton';
 import PageContainer from '../components/PageContainer/PageContainer';
-
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  rarity: 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Artifact';
-  unlocked: boolean;
-  date?: string;
-}
-
-const ACHIEVEMENTS: Achievement[] = [
-  { id: '1', title: 'First Transmission', description: 'Complete your initial learning module.', icon: 'wifi-tethering', rarity: 'Common', unlocked: true, date: 'APR 10, 2026' },
-  { id: '2', title: 'Data Archivist', description: 'Archive 5 lessons in a single session.', icon: 'inventory', rarity: 'Rare', unlocked: true, date: 'APR 12, 2026' },
-  { id: '3', title: 'Sync Master', description: 'Maintain a 7-day synchronization streak.', icon: 'bolt', rarity: 'Epic', unlocked: false },
-  { id: '4', title: 'Cosmic Scholar', description: 'Achieve 100% proficiency in Networking Basics.', icon: 'auto-awesome', rarity: 'Legendary', unlocked: false },
-  { id: '5', title: 'Neural Overlay', description: 'Complete all missions in one directive cycle.', icon: 'psychology', rarity: 'Artifact', unlocked: false },
-  { id: '6', title: 'Security Sentinel', description: 'Identify all security breaches in the Firewall test.', icon: 'security', rarity: 'Rare', unlocked: false },
-  { id: '7', title: 'Global Node', description: 'Reach the Top 3 in the regional rankings.', icon: 'public', rarity: 'Epic', unlocked: false },
-];
+import Skeleton from '../components/Skeleton/Skeleton';
+import { responsiveFontSize, scale } from '../constants/responsive';
+import { getThemeColors, useTheme } from '../contexts/ThemeContext';
+import { useApp } from '../contexts/AppContext';
+import { useFocusCleanup } from '../hooks/useFocusCleanup';
+import { evaluateAchievements, getAchievementStats, EvaluationState } from '../services/achievementEngine';
+import { Achievement } from '../types';
 
 const AchievementsScreen = () => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
   const router = useRouter();
+  const { userProgress, topics, streakData } = useApp();
+  useFocusCleanup();
+
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      const evaluate = async () => {
+        try {
+          setIsLoading(true);
+          const state: EvaluationState = {
+            progress: userProgress || {
+              totalXP: 0, streak: 0, topicsCompleted: 0,
+              totalTopics: 0, lessonsCompleted: 0, quizzesPassed: 0,
+              perfectQuizzes: 0, totalLessons: 0,
+            },
+            streakCurrent: streakData?.currentStreak || 0,
+            streakLongest: streakData?.longestStreak || 0,
+            topicsData: topics.map(t => ({
+              id: t.id,
+              completedLessons: t.completedLessons,
+              totalLessons: t.totalLessons,
+            })),
+          };
+          const { achievements: results } = await evaluateAchievements(state);
+          setAchievements(results);
+        } catch (error) {
+          console.error('Error evaluating achievements:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      evaluate();
+    }, [userProgress, topics, streakData])
+  );
+
+  const stats = getAchievementStats(achievements);
 
   const getRarityColor = (rarity: Achievement['rarity']) => {
     switch (rarity) {
@@ -38,7 +61,7 @@ const AchievementsScreen = () => {
       case 'Rare': return colors.primary;
       case 'Epic': return colors.tertiary;
       case 'Legendary': return colors.secondary;
-      case 'Artifact': return '#FFD700'; // Gold glow for artifacts
+      case 'Artifact': return '#FFD700';
       default: return colors.onSurfaceVariant;
     }
   };
@@ -76,6 +99,11 @@ const AchievementsScreen = () => {
            <Text style={[styles.badgeDesc, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_500Medium' }]} numberOfLines={2}>
              {item.description}
            </Text>
+           {!item.unlocked && (
+             <Text style={[styles.conditionText, { color: colors.primary, fontFamily: 'Manrope_600SemiBold' }]}>
+               🎯 {item.condition}
+             </Text>
+           )}
         </View>
 
         {!item.unlocked && (
@@ -88,6 +116,26 @@ const AchievementsScreen = () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <PageContainer scrollable={true} contentContainerStyle={styles.container}>
+          <View style={styles.header}>
+            <BackButton variant="circle" onPress={() => router.back()} />
+            <View style={styles.headerTitles}>
+              <Skeleton width={scale(180)} height={scale(14)} style={{ marginBottom: scale(8) }} />
+              <Skeleton width={scale(200)} height={scale(32)} />
+            </View>
+          </View>
+          <Skeleton width="100%" height={scale(80)} borderRadius={scale(24)} style={{ marginBottom: scale(40) }} />
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} width="100%" height={scale(100)} borderRadius={scale(28)} style={{ marginBottom: scale(16) }} />
+          ))}
+        </PageContainer>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Decorative Background */}
@@ -96,12 +144,7 @@ const AchievementsScreen = () => {
 
       <PageContainer scrollable={true} contentContainerStyle={styles.container}>
         <View style={styles.header}>
-           <TouchableOpacity 
-            onPress={() => router.back()}
-            style={[styles.backBtn, { backgroundColor: colors.surfaceContainerLow }]}
-           >
-             <MaterialIcons name="arrow-back" size={scale(24)} color={colors.onSurface} />
-           </TouchableOpacity>
+           <BackButton variant="circle" onPress={() => router.back()} />
            <View style={styles.headerTitles}>
              <Text style={[styles.overTitle, { color: colors.primary, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>ARCHIVE COLLECTION</Text>
              <Text style={[styles.title, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_800ExtraBold' }]}>Achievements</Text>
@@ -110,18 +153,18 @@ const AchievementsScreen = () => {
 
         <View style={[styles.statsRow, { backgroundColor: colors.surfaceContainerLow }]}>
            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>2/12</Text>
+              <Text style={[styles.statValue, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>{stats.unlocked}/{stats.total}</Text>
               <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>COLLECTED</Text>
            </View>
            <View style={[styles.statDivider, { backgroundColor: colors.surfaceContainerHighest }]} />
            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>16%</Text>
+              <Text style={[styles.statValue, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>{stats.percentage}%</Text>
               <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>SYNC PROGRESS</Text>
            </View>
         </View>
 
         <View style={styles.badgesGrid}>
-           {ACHIEVEMENTS.map(renderBadge)}
+           {achievements.map(renderBadge)}
         </View>
       </PageContainer>
     </View>
@@ -145,13 +188,6 @@ const styles = StyleSheet.create({
     marginTop: scale(20),
     marginBottom: scale(40),
     gap: scale(20),
-  },
-  backBtn: {
-    width: scale(48),
-    height: scale(48),
-    borderRadius: scale(16),
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   headerTitles: {
     flex: 1,
@@ -255,6 +291,11 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(13),
     lineHeight: responsiveFontSize(18),
     opacity: 0.7,
+  },
+  conditionText: {
+    fontSize: responsiveFontSize(11),
+    marginTop: scale(6),
+    opacity: 0.8,
   },
   lockIndicator: {
     position: 'absolute',

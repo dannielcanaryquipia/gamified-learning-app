@@ -1,8 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-import { scale, responsiveFontSize } from '../../constants/responsive';
+import { Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { isLandscape, responsiveFontSize, scale } from '../../constants/responsive';
 import { getThemeColors } from '../../contexts/ThemeContext';
 
 interface StreakRestoreModalProps {
@@ -21,6 +21,8 @@ const StreakRestoreModal: React.FC<StreakRestoreModalProps> = ({
   isDark,
 }) => {
   const colors = getThemeColors(isDark);
+  const { height, width } = useWindowDimensions();
+  const landscape = isLandscape(width, height);
 
   return (
     <Modal
@@ -30,7 +32,13 @@ const StreakRestoreModal: React.FC<StreakRestoreModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}>
-        <View style={[styles.modalContent, { backgroundColor: isDark ? colors.surfaceContainerLow : colors.surface }]}>
+        <View style={[
+          styles.modalContent, 
+          { 
+            backgroundColor: isDark ? colors.surfaceContainerLow : colors.surface,
+            maxHeight: landscape ? height * 0.85 : height * 0.7,
+          }
+        ]}>
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.onSurface, fontFamily: 'PlusJakartaSans_700Bold' }]}>
               🔥 Keep Your Streak Alive!
@@ -55,34 +63,40 @@ const StreakRestoreModal: React.FC<StreakRestoreModalProps> = ({
               : 'The Cosmic Archive awaits. Start your learning journey today and begin your legacy.'}
           </Text>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              activeOpacity={0.8}
-              onPress={onRestore}
-            >
-              <LinearGradient
-                colors={[colors.primary, colors.primaryDim]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.button}
-              >
-                <Text style={[styles.buttonText, { fontFamily: 'PlusJakartaSans_700Bold' }]}>
-                  {streakCount > 1 ? 'Continue Mission' : 'Initialize Learning'}
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            
-            {streakCount >= 0 && (
+          <ScrollView 
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.buttonContainer}>
               <TouchableOpacity 
-                style={styles.secondaryButton}
-                onPress={onClose}
+                activeOpacity={0.8}
+                onPress={onRestore}
               >
-                <Text style={[styles.secondaryButtonText, { color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }]}>
-                  View My Progress
-                </Text>
+                <LinearGradient
+                  colors={[colors.primary, colors.primaryDim]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.button, landscape && styles.buttonCompact]}
+                >
+                  <Text style={[styles.buttonText, { fontFamily: 'PlusJakartaSans_700Bold' }]}>
+                    {streakCount > 1 ? 'Continue Mission' : 'Initialize Learning'}
+                  </Text>
+                </LinearGradient>
               </TouchableOpacity>
-            )}
-          </View>
+              
+              {streakCount >= 0 && (
+                <TouchableOpacity 
+                  style={[styles.secondaryButton, landscape && styles.secondaryButtonCompact]}
+                  onPress={onClose}
+                >
+                  <Text style={[styles.secondaryButtonText, { color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }]}>
+                    View My Progress
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -113,6 +127,13 @@ const styles = StyleSheet.create({
         elevation: 10,
       }
     })
+  },
+  scrollContainer: {
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
   },
   header: {
     flexDirection: 'row',
@@ -159,6 +180,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: scale(12),
   },
+  buttonCompact: {
+    paddingVertical: scale(12),
+    marginBottom: scale(8),
+  },
   buttonText: {
     color: 'white',
     fontSize: responsiveFontSize(16),
@@ -166,6 +191,9 @@ const styles = StyleSheet.create({
   secondaryButton: {
     padding: scale(16),
     alignItems: 'center',
+  },
+  secondaryButtonCompact: {
+    paddingVertical: scale(10),
   },
   secondaryButtonText: {
     fontSize: responsiveFontSize(14),

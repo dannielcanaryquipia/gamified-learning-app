@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 import Card from '../Card/Card';
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
   },
   featuredCard: {
     width: scale(280),
+    maxWidth: Dimensions.get('window').width - scale(24), // Keep it within screen bounds!
     minHeight: scale(160),
     marginBottom: 0,
   },

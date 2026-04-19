@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { fetchTopics, fetchUserProfile, fetchUserProgress } from '../services/mockData';
+import { fetchTopics, fetchUserProfile, fetchUserProgress, completeLesson } from '../services/mockData';
 import { Topic, UserProfile, UserProgress } from '../types';
 
 const PROFILE_STORAGE_KEY = '@GamifiedLearning:userProfile';
@@ -48,7 +48,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
       
       if (storedProgress) {
-        setUserProgress(safeParse(storedProgress));
+        const parsed = safeParse(storedProgress);
+        // Ensure new fields have defaults for backward compatibility
+        setUserProgress({
+          lessonsCompleted: 0,
+          quizzesPassed: 0,
+          perfectQuizzes: 0,
+          totalLessons: 0,
+          ...parsed,
+        });
       }
 
       // Initialize streak data if it doesn't exist
@@ -228,9 +236,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const markLessonComplete = async (topicId: string, lessonId: string) => {
     try {
-      // Import the completeLesson function
-      const { completeLesson } = await import('../services/mockData');
-      
       // Call the completion service
       const result = await completeLesson(topicId, lessonId);
       

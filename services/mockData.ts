@@ -10,6 +10,45 @@ const computerBasicsLessons: Lesson[] = [
     isCompleted: false,
     xp: 30,
     order: 1,
+    quiz: {
+      id: 'quiz-cb-1',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'cb1-q1',
+          question: 'What is a computer?',
+          options: [
+            'A device for making phone calls only',
+            'An electronic device that processes, stores, and retrieves information',
+            'A type of television',
+            'A mechanical calculator'
+          ],
+          correctIndex: 1
+        },
+        {
+          id: 'cb1-q2',
+          question: 'Which of the following is NOT a key characteristic of a computer?',
+          options: [
+            'Electronic',
+            'Programmable',
+            'Emotional',
+            'Fast'
+          ],
+          correctIndex: 2
+        },
+        {
+          id: 'cb1-q3',
+          question: 'Which type of computer is designed for regular use at a single location?',
+          options: [
+            'Laptop',
+            'Smartphone',
+            'Desktop Computer',
+            'Tablet'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# What is a Computer?
 
 ## Definition
@@ -46,6 +85,45 @@ A computer is an electronic device that processes, stores, and retrieves informa
     isCompleted: false,
     xp: 40,
     order: 2,
+    quiz: {
+      id: 'quiz-cb-2',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'cb2-q1',
+          question: 'What is the four-step process that computers use called?',
+          options: [
+            'Binary Processing Cycle',
+            'Information Processing Cycle',
+            'Digital Computation Loop',
+            'Software Execution Pipeline'
+          ],
+          correctIndex: 1
+        },
+        {
+          id: 'cb2-q2',
+          question: 'What does the CPU do?',
+          options: [
+            'Stores files permanently',
+            'Displays images on screen',
+            'Processes data and performs calculations',
+            'Provides power to the computer'
+          ],
+          correctIndex: 2
+        },
+        {
+          id: 'cb2-q3',
+          question: 'Computers use binary code made of which digits?',
+          options: [
+            '1 and 2',
+            '0 and 1',
+            'A and B',
+            '0 through 9'
+          ],
+          correctIndex: 1
+        }
+      ]
+    },
     content: `# How Computers Work
 
 ## The Basic Process
@@ -89,6 +167,34 @@ Computers use binary code (0s and 1s) to represent all data:
     isCompleted: false,
     xp: 50,
     order: 3,
+    quiz: {
+      id: 'quiz-cb-3',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'cb3-q1',
+          question: 'What is the "brain" of the computer?',
+          options: [
+            'RAM',
+            'Hard Drive',
+            'CPU',
+            'Power Supply'
+          ],
+          correctIndex: 2
+        },
+        {
+          id: 'cb3-q2',
+          question: 'What is the purpose of RAM?',
+          options: [
+            'Permanent file storage',
+            'Temporary storage for running programs',
+            'Processing visual information',
+            'Connecting to the internet'
+          ],
+          correctIndex: 1
+        }
+      ]
+    },
     content: `# Parts of a Computer
 
 ## Core Hardware Components
@@ -152,6 +258,34 @@ const internetBasicsLessons: Lesson[] = [
     isCompleted: false,
     xp: 30,
     order: 1,
+    quiz: {
+      id: 'quiz-ib-1',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'ib1-q1',
+          question: 'What is the Internet?',
+          options: [
+            'A single computer',
+            'A software program',
+            'A global network of billions of connected computers',
+            'A type of web browser'
+          ],
+          correctIndex: 2
+        },
+        {
+          id: 'ib1-q2',
+          question: 'Which connection type provides the highest speed?',
+          options: [
+            'Dial-up',
+            'Satellite',
+            'Fiber optic broadband',
+            'Bluetooth'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# What is the Internet?
 
 ## Definition
@@ -188,6 +322,34 @@ The Internet is a global network of billions of computers and other electronic d
     isCompleted: false,
     xp: 40,
     order: 2,
+    quiz: {
+      id: 'quiz-ib-2',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'ib2-q1',
+          question: 'What does HTTPS stand for?',
+          options: [
+            'Hyper Text Transfer Protocol Secure',
+            'High Tech Transfer Protocol System',
+            'Hyper Text Transport Protocol Server',
+            'Home Transfer Text Protocol Secure'
+          ],
+          correctIndex: 0
+        },
+        {
+          id: 'ib2-q2',
+          question: 'What is the correct order when you visit a website?',
+          options: [
+            'Server → Browser → URL → Display',
+            'URL → Server → Browser → Display',
+            'Browser sends request → Server processes → Server responds → Browser displays',
+            'Display → Browser → Server → URL'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# How the Web Works
 
 ## Key Components
@@ -237,6 +399,45 @@ const programmingBasicsLessons: Lesson[] = [
     isCompleted: false,
     xp: 30,
     order: 1,
+    quiz: {
+      id: 'quiz-pb-1',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'pb1-q1',
+          question: 'What is programming?',
+          options: [
+            'Watching TV shows',
+            'Creating instructions that tell a computer what to do',
+            'Using a word processor',
+            'Browsing the internet'
+          ],
+          correctIndex: 1
+        },
+        {
+          id: 'pb1-q2',
+          question: 'What is an algorithm?',
+          options: [
+            'A type of programming language',
+            'A computer virus',
+            'Step-by-step instructions to solve a problem',
+            'A hardware component'
+          ],
+          correctIndex: 2
+        },
+        {
+          id: 'pb1-q3',
+          question: 'Which language is commonly recommended for beginners?',
+          options: [
+            'C++',
+            'Assembly',
+            'Python',
+            'Rust'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# What is Programming?
 
 ## Definition
@@ -340,6 +541,34 @@ Imagine you are sending a letter. The **IP address** is the address on the envel
     isCompleted: false,
     xp: 60,
     order: 2,
+    quiz: {
+      id: 'quiz-dns-1',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'dns-q1',
+          question: 'What does DNS stand for?',
+          options: [
+            'Digital Network Service',
+            'Domain Name System',
+            'Data Network Server',
+            'Direct Name Service'
+          ],
+          correctIndex: 1
+        },
+        {
+          id: 'dns-q2',
+          question: 'What does an A Record point to?',
+          options: [
+            'An IPv6 address',
+            'Another domain name',
+            'An IPv4 address',
+            'A mail server'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# Introduction
 When you type \`google.com\` into your browser, your computer doesn't actually know where that is. Computers communicate using IP addresses (numbers). The **Domain Name System (DNS)** is what translates human-friendly names into computer-friendly numbers.
 
@@ -362,6 +591,34 @@ Think of DNS like the Contacts app on your phone. You look up "Alice" (the domai
     isCompleted: false,
     xp: 40,
     order: 3,
+    quiz: {
+      id: 'quiz-ports-1',
+      passingScore: 0.7,
+      questions: [
+        {
+          id: 'ports-q1',
+          question: 'What port number does HTTPS use?',
+          options: [
+            'Port 21',
+            'Port 80',
+            'Port 443',
+            'Port 22'
+          ],
+          correctIndex: 2
+        },
+        {
+          id: 'ports-q2',
+          question: 'What is the maximum port number available?',
+          options: [
+            '1024',
+            '32768',
+            '65535',
+            '99999'
+          ],
+          correctIndex: 2
+        }
+      ]
+    },
     content: `# Introduction
 If an IP address is like the address of an apartment building, a **Port Number** is like the specific apartment number. It tells the incoming data which program or "door" it should enter.
 
@@ -390,6 +647,7 @@ export const mockTopics: Topic[] = [
     completedLessons: 0,
     xp: 0,
     category: 'Computer Science',
+    difficulty: 'Beginner',
     isLocked: false,
     lastAccessed: new Date(),
     lessons: computerBasicsLessons,
@@ -405,6 +663,7 @@ export const mockTopics: Topic[] = [
     completedLessons: 0,
     xp: 0,
     category: 'Computer Science',
+    difficulty: 'Beginner',
     isLocked: false,
     lastAccessed: new Date(),
     lessons: internetBasicsLessons,
@@ -420,6 +679,7 @@ export const mockTopics: Topic[] = [
     completedLessons: 0,
     xp: 0,
     category: 'Computer Science',
+    difficulty: 'Intermediate',
     isLocked: false,
     lastAccessed: new Date(),
     lessons: programmingBasicsLessons,
@@ -435,6 +695,7 @@ export const mockTopics: Topic[] = [
     completedLessons: 0,
     xp: 0,
     category: 'Networking',
+    difficulty: 'Intermediate',
     isLocked: false,
     lastAccessed: new Date(),
     lessons: networkingBasicsLessons,
@@ -461,7 +722,11 @@ const mockUserProgress: UserProgress = {
   totalXP: 0,
   streak: 0,
   topicsCompleted: 0,
-  totalTopics: mockTopics.length
+  totalTopics: mockTopics.length,
+  lessonsCompleted: 0,
+  quizzesPassed: 0,
+  perfectQuizzes: 0,
+  totalLessons: mockTopics.reduce((sum, t) => sum + t.totalLessons, 0),
 };
 
 // API Service Functions
@@ -482,7 +747,10 @@ export const completeLesson = async (
       
       if (lesson && topic) {
         // Update lesson completion
-        lesson.isCompleted = true;
+        if (!lesson.isCompleted) {
+          lesson.isCompleted = true;
+          mockUserProgress.lessonsCompleted++;
+        }
         
         // Update topic progress
         const completedLessons = topic.lessons.filter(l => l.isCompleted).length;
@@ -512,17 +780,69 @@ export const completeLesson = async (
 export const completeTest = async (
   topicId: string,
   lessonId: string,
-  score: number
+  score: number,
+  totalQuestions: number
 ): Promise<{ passed: boolean; xpEarned: number }> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // This is a placeholder for future test functionality
-      // Will be reimplemented when tests are re-added
+      const topic = mockTopics.find(t => t.id === topicId);
+      const lesson = topic?.lessons.find(l => l.id === lessonId);
+      const passingScore = lesson?.quiz?.passingScore || 0.7;
+      const percentage = score / totalQuestions;
+      const passed = percentage >= passingScore;
+      
+      let xpEarned = 0;
+      if (passed && lesson) {
+        xpEarned = lesson.xp;
+        // Perfect quiz bonus
+        if (percentage === 1) {
+          xpEarned = Math.round(xpEarned * 1.5);
+          mockUserProgress.perfectQuizzes++;
+        }
+        mockUserProgress.quizzesPassed++;
+      }
+
       resolve({
-        passed: false,
-        xpEarned: 0
+        passed,
+        xpEarned
       });
     }, 500);
+  });
+};
+
+/** Returns all quizzes grouped by topic, with lock status */
+export const fetchQuizzes = async (): Promise<{
+  topicId: string;
+  topicTitle: string;
+  topicIcon: string;
+  lessons: {
+    lessonId: string;
+    lessonTitle: string;
+    lessonOrder: number;
+    isLessonCompleted: boolean;
+    quiz: Lesson['quiz'];
+    questionCount: number;
+  }[];
+}[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const result = mockTopics.map(topic => ({
+        topicId: topic.id,
+        topicTitle: topic.title,
+        topicIcon: topic.icon,
+        lessons: topic.lessons
+          .filter(l => l.quiz)
+          .map(l => ({
+            lessonId: l.id,
+            lessonTitle: l.title,
+            lessonOrder: l.order,
+            isLessonCompleted: l.isCompleted,
+            quiz: l.quiz,
+            questionCount: l.quiz?.questions.length || 0,
+          })),
+      }));
+      resolve(result);
+    }, 300);
   });
 };
 

@@ -10,6 +10,7 @@ import {
   ViewStyle,
   Platform,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import StreakRestoreModal from '../../components/StreakRestoreModal/StreakRestoreModal';
@@ -179,7 +180,7 @@ const HomeScreen = () => {
                 horizontal 
                 showsHorizontalScrollIndicator={false} 
                 contentContainerStyle={styles.horizontalScroll}
-                snapToInterval={scale(280) + scale(16)}
+                snapToInterval={Math.min(scale(280), Dimensions.get('window').width - scale(24)) + scale(16)}
                 decelerationRate="fast"
               >
                 {inProgressTopics.map(topic => renderTopicCard(topic, true))}

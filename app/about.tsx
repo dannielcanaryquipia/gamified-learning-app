@@ -2,9 +2,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { scale, responsiveFontSize } from '../constants/responsive';
-import { getThemeColors, useTheme } from '../contexts/ThemeContext';
+import BackButton from '../components/BackButton/BackButton';
 import PageContainer from '../components/PageContainer/PageContainer';
+import { responsiveFontSize, scale } from '../constants/responsive';
+import { getThemeColors, useTheme } from '../contexts/ThemeContext';
 
 type AboutItemProps = {
   icon: React.ComponentProps<typeof MaterialIcons>['name'];
@@ -66,9 +67,7 @@ export default function AboutScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <MaterialIcons name="arrow-back" size={scale(24)} color={colors.primary} />
-        </TouchableOpacity>
+        <BackButton variant="inline" style={styles.backButton} onPress={() => router.back()} />
         <Text style={[styles.headerTitle, { color: colors.text }]}>About</Text>
       </View>
 
@@ -111,7 +110,7 @@ export default function AboutScreen() {
         <AboutItem 
           icon="facebook" 
           title="Facebook" 
-          onPress={() => handleOpenLink('https://facebook.com/example')}
+          onPress={() => handleOpenLink('https://www.facebook.com/danniel.canary.quipia.2024')}
         />
         <AboutItem 
           icon="alternate-email" 

@@ -1,6 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,10 +12,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import { useApp } from '../../contexts/AppContext';
-import { fetchQuizzes } from '../../services/mockData';
+import { useApp } from '../../stores/appStore';
 import Skeleton from '../../components/Skeleton/Skeleton';
-import { useFocusEffect } from 'expo-router';
 
 interface QuizItem {
   lessonId: string;
@@ -37,26 +35,26 @@ const QuizzesScreen = () => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
   const router = useRouter();
-  const { topics } = useApp();
-  const [quizGroups, setQuizGroups] = useState<TopicQuizGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { topics, isLoading: storeLoading } = useApp();
 
-  useFocusEffect(
-    useCallback(() => {
-      const loadQuizzes = async () => {
-        try {
-          setIsLoading(true);
-          const data = await fetchQuizzes();
-          setQuizGroups(data);
-        } catch (error) {
-          console.error('Error loading quizzes:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadQuizzes();
-    }, [topics])
-  );
+  // Derive quiz groups from store topics
+  const quizGroups: TopicQuizGroup[] = topics.map(topic => ({
+    topicId: topic.id,
+    topicTitle: topic.title,
+    topicIcon: topic.icon,
+    lessons: topic.lessons
+      .filter(l => l.quiz)
+      .map(l => ({
+        lessonId: l.id,
+        lessonTitle: l.title,
+        lessonOrder: l.order,
+        isLessonCompleted: l.isCompleted,
+        quiz: l.quiz,
+        questionCount: l.quiz?.questions.length || 0,
+      })),
+  }));
+
+  const isLoading = storeLoading;
 
   const getTopicProgress = (topicId: string) => {
     const topic = topics.find(t => t.id === topicId);

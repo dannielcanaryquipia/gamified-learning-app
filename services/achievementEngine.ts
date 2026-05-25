@@ -1,7 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Achievement, UserProgress } from '../types';
-
-const ACHIEVEMENTS_STORAGE_KEY = '@GamifiedLearning:achievements';
 
 interface AchievementRule {
   id: string;
@@ -21,7 +18,7 @@ export interface EvaluationState {
 }
 
 // ─── Achievement Rules ─────────────────────────────────────────────────────────
-const ACHIEVEMENT_RULES: AchievementRule[] = [
+export const ACHIEVEMENT_RULES: AchievementRule[] = [
   {
     id: 'first-transmission',
     title: 'First Transmission',
@@ -137,65 +134,9 @@ const ACHIEVEMENT_RULES: AchievementRule[] = [
 
 // ─── Engine Functions ───────────────────────────────────────────────────────────
 
-/** Load unlocked achievement IDs from storage */
-export const loadUnlockedAchievements = async (): Promise<Set<string>> => {
-  try {
-    const stored = await AsyncStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
-    if (stored) {
-      const ids: string[] = JSON.parse(stored);
-      return new Set(ids);
-    }
-  } catch (error) {
-    console.error('Error loading achievements:', error);
-  }
-  return new Set();
-};
-
-/** Save unlocked achievement IDs to storage */
-const saveUnlockedAchievements = async (ids: Set<string>): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify([...ids]));
-  } catch (error) {
-    console.error('Error saving achievements:', error);
-  }
-};
-
-/** Evaluate all rules against current state. Returns the full achievement list with unlock status + newly unlocked IDs */
-export const evaluateAchievements = async (
-  state: EvaluationState
-): Promise<{ achievements: Achievement[]; newlyUnlocked: string[] }> => {
-  const previouslyUnlocked = await loadUnlockedAchievements();
-  const newlyUnlocked: string[] = [];
-  const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-
-  const achievements: Achievement[] = ACHIEVEMENT_RULES.map(rule => {
-    const wasUnlocked = previouslyUnlocked.has(rule.id);
-    const isNowUnlocked = rule.evaluate(state);
-
-    if (isNowUnlocked && !wasUnlocked) {
-      newlyUnlocked.push(rule.id);
-      previouslyUnlocked.add(rule.id);
-    }
-
-    return {
-      id: rule.id,
-      title: rule.title,
-      description: rule.description,
-      icon: rule.icon,
-      rarity: rule.rarity,
-      unlocked: wasUnlocked || isNowUnlocked,
-      date: (wasUnlocked || isNowUnlocked) ? today : undefined,
-      condition: rule.condition,
-    };
-  });
-
-  // Persist any new unlocks
-  if (newlyUnlocked.length > 0) {
-    await saveUnlockedAchievements(previouslyUnlocked);
-  }
-
-  return { achievements, newlyUnlocked };
-};
+// Achievement evaluation is now handled by the Zustand store using SQLite persistence.
+// See stores/appStore.ts → evaluateAchievements()
+// See services/database.ts → getAchievementsFromDb(), unlockAchievement()
 
 /** Get the total count */
 export const getAchievementStats = (achievements: Achievement[]) => {

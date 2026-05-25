@@ -18,9 +18,10 @@ interface QuizEngineProps {
   questions: QuizQuestionData[];
   onComplete: (score: number) => void;
   xpReward: number;
+  passingScore?: number;
 }
 
-const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward }) => {
+const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward, passingScore = 0.7 }) => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
 
@@ -61,7 +62,7 @@ const QuizEngine: React.FC<QuizEngineProps> = ({ questions, onComplete, xpReward
   };
 
   if (showResults) {
-    const passed = (score / questions.length) >= 0.7;
+    const passed = (score / questions.length) >= passingScore;
     return (
       <View style={[styles.resultsContainer, { backgroundColor: colors.surfaceContainerLow }]}>
         <LinearGradient

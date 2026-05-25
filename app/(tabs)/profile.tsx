@@ -2,17 +2,19 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { responsiveFontSize, scale } from '../../constants/responsive';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../stores/appStore';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
+import { useAppStore } from '../../stores/appStore';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const { userProfile, userProgress, updateUserProfile, streakData } = useApp();
+  const achievements = useAppStore(s => s.achievements);
   const colors = getThemeColors(isDark);
   
   const [isEditingName, setIsEditingName] = useState(false);
@@ -22,6 +24,12 @@ export default function ProfileScreen() {
   const archivistLevel = Math.floor((userProgress?.totalXP || 0) / 1000) + 1;
   const nextLevelXP = archivistLevel * 1000;
   const levelProgress = ((userProgress?.totalXP || 0) % 1000) / 1000;
+
+  const achievementStats = useMemo(() => {
+    const total = achievements.length;
+    const unlocked = achievements.filter(a => a.unlocked).length;
+    return { total, unlocked };
+  }, [achievements]);
 
   type MenuItem = {
     icon: React.ComponentProps<typeof MaterialIcons>['name'];
@@ -38,13 +46,7 @@ export default function ProfileScreen() {
       description: 'System preferences & security',
       onPress: () => router.push('/settings')
     },
-    { 
-      icon: 'verified-user', 
-      label: 'Archivist Credentials',
-      description: 'Manage data & privacy',
-      onPress: () => router.push('/credentials' as any)
-    },
-    { 
+    {
       icon: 'help-outline', 
       label: 'Transmission Help',
       description: 'Support & documentation',
@@ -175,7 +177,7 @@ export default function ProfileScreen() {
             onPress={() => router.push('/achievements' as any)}
             style={styles.statItem}
            >
-              <Text style={[styles.statValue, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>2/12</Text>
+              <Text style={[styles.statValue, { color: colors.tertiary, fontFamily: 'PlusJakartaSans_700Bold' }]}>{achievementStats.unlocked}/{achievementStats.total}</Text>
               <Text style={[styles.statLabel, { color: colors.onSurfaceVariant, fontFamily: 'Manrope_700Bold' }]}>BADGES</Text>
            </TouchableOpacity>
         </View>

@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../stores/appStore';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 interface DailyQuest {

@@ -1,10 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Switch, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { StyleSheet, Switch, Text, TouchableOpacity, View, Platform, Alert } from 'react-native';
 import BackButton from '../components/BackButton/BackButton';
 import { scale, responsiveFontSize } from '../constants/responsive';
 import { getThemeColors, useTheme } from '../contexts/ThemeContext';
+import { useApp } from '../stores/appStore';
 import PageContainer from '../components/PageContainer/PageContainer';
 
 type SettingsItemProps = {
@@ -60,9 +61,32 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { theme, isDark, toggleTheme } = useTheme();
   const colors = getThemeColors(isDark);
+  const { settings, updateSettings, resetProgress } = useApp();
 
   const handleThemeChange = (value: boolean) => {
     toggleTheme(value ? 'dark' : 'light');
+  };
+
+  const handleClearProgress = () => {
+    Alert.alert(
+      'Clear Progress',
+      'This will reset all your learning data, XP, streaks, and achievements. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear', style: 'destructive', onPress: () => resetProgress() },
+      ]
+    );
+  };
+
+  const handleDeactivateSession = () => {
+    Alert.alert(
+      'Deactivate Session',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: () => {} },
+      ]
+    );
   };
 
   return (
@@ -136,9 +160,10 @@ export default function SettingsScreen() {
                 </Text>
               </View>
               <Switch
-                value={true}
+                value={settings.hapticsEnabled}
+                onValueChange={(v) => updateSettings({ hapticsEnabled: v })}
                 trackColor={{ false: colors.surfaceContainerHighest, true: colors.primary + '60' }}
-                thumbColor={colors.primary}
+                thumbColor={settings.hapticsEnabled ? colors.primary : colors.onSurfaceVariant}
                 ios_backgroundColor={colors.surfaceContainerHighest}
               />
             </View>
@@ -155,9 +180,10 @@ export default function SettingsScreen() {
                 </Text>
               </View>
               <Switch
-                value={false}
+                value={settings.soundEnabled}
+                onValueChange={(v) => updateSettings({ soundEnabled: v })}
                 trackColor={{ false: colors.surfaceContainerHighest, true: colors.primary + '60' }}
-                thumbColor={colors.onSurfaceVariant}
+                thumbColor={settings.soundEnabled ? colors.primary : colors.onSurfaceVariant}
                 ios_backgroundColor={colors.surfaceContainerHighest}
               />
             </View>
@@ -196,17 +222,19 @@ export default function SettingsScreen() {
             DANGER ZONE
           </Text>
           <View style={styles.sectionContent}>
-            <SettingsItem 
+            <SettingsItem
               icon="delete-outline"
               title="Clear Progress"
               description="Reset all learning data"
               destructive
+              onPress={handleClearProgress}
             />
-            <SettingsItem 
+            <SettingsItem
               icon="logout"
               title="Deactivate Session"
               description="Sign out of the archive"
               destructive
+              onPress={handleDeactivateSession}
             />
           </View>
         </View>

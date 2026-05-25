@@ -729,10 +729,13 @@ const mockUserProgress: UserProgress = {
   totalLessons: mockTopics.reduce((sum, t) => sum + t.totalLessons, 0),
 };
 
+// Deep clone helper to prevent shared mutable state
+const clone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+
 // API Service Functions
 export const fetchTopics = async (): Promise<Topic[]> => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(mockTopics), 500);
+    setTimeout(() => resolve(clone(mockTopics)), 500);
   });
 };
 
@@ -742,36 +745,34 @@ export const completeLesson = async (
 ): Promise<{ topic: Topic; userProgress: UserProgress }> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const topic = mockTopics.find(t => t.id === topicId);
+      // Work on clones to avoid mutating module-level state
+      const topic = clone(mockTopics.find(t => t.id === topicId));
+      const progress = clone(mockUserProgress);
       const lesson = topic?.lessons.find(l => l.id === lessonId);
-      
+
       if (lesson && topic) {
-        // Update lesson completion
         if (!lesson.isCompleted) {
           lesson.isCompleted = true;
-          mockUserProgress.lessonsCompleted++;
+          progress.lessonsCompleted++;
         }
-        
-        // Update topic progress
+
         const completedLessons = topic.lessons.filter(l => l.isCompleted).length;
         topic.completedLessons = completedLessons;
         topic.currentXp = topic.lessons
           .filter(l => l.isCompleted)
           .reduce((sum, l) => sum + l.xp, 0);
-        
-        // Update user progress
-        mockUserProgress.totalXP += lesson.xp;
-        mockUserProgress.streak++;
-        
-        // Check if topic is completed
+
+        progress.totalXP += lesson.xp;
+        // Note: streak is managed by the store's updateStreak(), not here
+
         if (completedLessons === topic.totalLessons) {
-          mockUserProgress.topicsCompleted++;
+          progress.topicsCompleted++;
         }
       }
 
       resolve({
-        topic: topic || mockTopics[0],
-        userProgress: { ...mockUserProgress }
+        topic: topic || clone(mockTopics[0]),
+        userProgress: progress
       });
     }, 500);
   });
@@ -785,21 +786,18 @@ export const completeTest = async (
 ): Promise<{ passed: boolean; xpEarned: number }> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const topic = mockTopics.find(t => t.id === topicId);
+      const topic = clone(mockTopics.find(t => t.id === topicId));
       const lesson = topic?.lessons.find(l => l.id === lessonId);
       const passingScore = lesson?.quiz?.passingScore || 0.7;
       const percentage = score / totalQuestions;
       const passed = percentage >= passingScore;
-      
+
       let xpEarned = 0;
       if (passed && lesson) {
         xpEarned = lesson.xp;
-        // Perfect quiz bonus
         if (percentage === 1) {
           xpEarned = Math.round(xpEarned * 1.5);
-          mockUserProgress.perfectQuizzes++;
         }
-        mockUserProgress.quizzesPassed++;
       }
 
       resolve({

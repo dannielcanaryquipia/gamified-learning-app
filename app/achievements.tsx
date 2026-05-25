@@ -1,15 +1,14 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import BackButton from '../components/BackButton/BackButton';
 import PageContainer from '../components/PageContainer/PageContainer';
 import Skeleton from '../components/Skeleton/Skeleton';
 import { responsiveFontSize, scale } from '../constants/responsive';
 import { getThemeColors, useTheme } from '../contexts/ThemeContext';
-import { useApp } from '../contexts/AppContext';
+import { useApp, useAppStore } from '../stores/appStore';
 import { useFocusCleanup } from '../hooks/useFocusCleanup';
-import { evaluateAchievements, getAchievementStats, EvaluationState } from '../services/achievementEngine';
 import { Achievement } from '../types';
 
 const AchievementsScreen = () => {
@@ -19,41 +18,23 @@ const AchievementsScreen = () => {
   const { userProgress, topics, streakData } = useApp();
   useFocusCleanup();
 
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const storeAchievements = useAppStore(s => s.achievements);
+  const isLoading = useAppStore(s => s.isLoading);
+  const evaluateAchievements = useAppStore(s => s.evaluateAchievements);
 
   useFocusEffect(
     useCallback(() => {
-      const evaluate = async () => {
-        try {
-          setIsLoading(true);
-          const state: EvaluationState = {
-            progress: userProgress || {
-              totalXP: 0, streak: 0, topicsCompleted: 0,
-              totalTopics: 0, lessonsCompleted: 0, quizzesPassed: 0,
-              perfectQuizzes: 0, totalLessons: 0,
-            },
-            streakCurrent: streakData?.currentStreak || 0,
-            streakLongest: streakData?.longestStreak || 0,
-            topicsData: topics.map(t => ({
-              id: t.id,
-              completedLessons: t.completedLessons,
-              totalLessons: t.totalLessons,
-            })),
-          };
-          const { achievements: results } = await evaluateAchievements(state);
-          setAchievements(results);
-        } catch (error) {
-          console.error('Error evaluating achievements:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      evaluate();
-    }, [userProgress, topics, streakData])
+      evaluateAchievements();
+    }, [evaluateAchievements])
   );
 
-  const stats = getAchievementStats(achievements);
+  const achievements = storeAchievements;
+  const stats = useMemo(() => {
+    const total = achievements.length;
+    const unlocked = achievements.filter(a => a.unlocked).length;
+    const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+    return { total, unlocked, percentage };
+  }, [achievements]);
 
   const getRarityColor = (rarity: Achievement['rarity']) => {
     switch (rarity) {

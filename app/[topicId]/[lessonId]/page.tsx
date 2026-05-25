@@ -2,9 +2,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View, Platform, TouchableOpacity } from 'react-native';
-import { useApp } from '../../../contexts/AppContext';
+import { useApp } from '../../../stores/appStore';
 import { getThemeColors, useTheme } from '../../../contexts/ThemeContext';
-import { fetchTopics } from '../../../services/mockData';
 import { Lesson } from '../../../types';
 import BackButton from '../../../components/BackButton/BackButton';
 import PageContainer from '../../../components/PageContainer/PageContainer';
@@ -19,7 +18,7 @@ export default function NestedLessonScreen() {
   const colors = getThemeColors(isDark);
   const router = useRouter();
   const { topicId, lessonId } = useLocalSearchParams<{ topicId: string; lessonId: string }>();
-  const { markLessonComplete } = useApp();
+  const { markLessonComplete, topics, isLoading: storeLoading } = useApp();
   const { isLoading: isRedirecting, showLoading, hideLoading } = useLoadingOverlay();
   
   const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -34,24 +33,15 @@ export default function NestedLessonScreen() {
   const isWideScreen = screenDims.isDesktop || screenDims.isTablet;
 
   useEffect(() => {
-    const loadLesson = async () => {
-      if (!topicId || !lessonId) return;
-      try {
-        const topics = await fetchTopics();
-        const topicData = topics.find((t: any) => t.id === topicId);
-        if (!topicData) return;
-        const lessonData = topicData.lessons?.find((l: any) => l.id === lessonId);
-        setLesson(lessonData || null);
-        setTopicTitle(topicData.title);
-        if (lessonData?.isCompleted) setIsCompleted(true);
-      } catch (error) {
-        console.error('Error loading lesson:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadLesson();
-  }, [topicId, lessonId]);
+    if (!topicId || !lessonId || storeLoading) return;
+    const topicData = topics.find(t => t.id === topicId);
+    if (!topicData) return;
+    const lessonData = topicData.lessons?.find(l => l.id === lessonId);
+    setLesson(lessonData || null);
+    setTopicTitle(topicData.title);
+    if (lessonData?.isCompleted) setIsCompleted(true);
+    setIsLoading(false);
+  }, [topicId, lessonId, topics, storeLoading]);
 
   useEffect(() => {
     if (!isLoading && lesson && isWideScreen && !isAtBottom) {

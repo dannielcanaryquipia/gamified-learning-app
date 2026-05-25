@@ -1,11 +1,11 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import React from 'react';
-import { StyleSheet, Text, View, Platform } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, View, Platform, ScrollView, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../stores/appStore';
 
 interface LeaderboardEntry {
   id: string;
@@ -21,12 +21,19 @@ interface LeaderboardEntry {
 const LeaderboardScreen = () => {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
-  const { userProgress, userProfile, streakData } = useApp();
+  const { userProgress, userProfile, streakData, refreshData } = useApp();
+  const [refreshing, setRefreshing] = React.useState(false);
 
   // Create smart mock leaderboard with real user data embedded
   const userXP = userProgress?.totalXP || 0;
   const userName = userProfile?.name || 'You';
   const userStreak = streakData?.currentStreak || 0;
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   const generateLeaderboard = (): LeaderboardEntry[] => {
     const mockPlayers: LeaderboardEntry[] = [
@@ -61,7 +68,7 @@ const LeaderboardScreen = () => {
     return all;
   };
 
-  const leaderboard = generateLeaderboard();
+  const leaderboard = useMemo(() => generateLeaderboard(), [userXP, userName, userStreak]);
   const top3 = leaderboard.slice(0, 3);
   const rest = leaderboard.slice(3);
   const userRank = leaderboard.find(e => e.isCurrentUser);
@@ -69,7 +76,9 @@ const LeaderboardScreen = () => {
   const crownColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
   return (
-    <PageContainer contentContainerStyle={{ paddingVertical: scale(32), paddingBottom: scale(120) }}>
+    <PageContainer contentContainerStyle={{ paddingVertical: scale(32), paddingBottom: scale(120) }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+    >
       {/* Atmospheric Header */}
       <View style={styles.header}>
         <LinearGradient

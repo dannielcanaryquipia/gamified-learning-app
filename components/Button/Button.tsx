@@ -7,13 +7,14 @@ import {
   TouchableOpacityProps,
   ViewStyle
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { scale } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'disabled';
+  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'disabled' | 'gradient';
   size?: 'small' | 'medium' | 'large';
   loading?: boolean;
   disabled?: boolean;
@@ -103,6 +104,11 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
       borderWidth: 0,
       borderColor: 'transparent',
     },
+    gradient: {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      borderColor: 'transparent',
+    },
   };
 
   // Text color based on variant
@@ -110,31 +116,12 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
     if (variant === 'outline') return colors.primary;
     if (variant === 'text') return colors.primary;
     if (variant === 'disabled') return colors.onSurface;
+    if (variant === 'gradient') return colors.surface;
     return colors.surface;
   };
 
-  return (
-    <TouchableOpacity
-      ref={ref}
-      testID={testID}
-      activeOpacity={0.7}
-      onPress={isDisabled ? undefined : onPress}
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: isDisabled ? 0.6 : 1,
-          width: fullWidth ? '100%' : undefined,
-          alignSelf: fullWidth ? 'stretch' : 'center',
-        },
-        sizeStyles[size],
-        variantStyles[variant === 'disabled' ? 'disabled' : variant],
-        style,
-      ]}
-      disabled={isDisabled}
-      {...rest}
-    >
+  const buttonContent = (
+    <>
       {loading ? (
         <ActivityIndicator
           size={textSizeStyles[size].fontSize}
@@ -144,7 +131,7 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
       ): icon ? (
         <>{icon}</>
       ) : null}
-      
+
       {!loading && title && (
         <Text
           style={[
@@ -163,6 +150,67 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
           {title}
         </Text>
       )}
+    </>
+  );
+
+  const containerStyle = [
+    {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      opacity: isDisabled ? 0.6 : 1,
+      width: fullWidth ? ('100%' as const) : undefined,
+      alignSelf: fullWidth ? ('stretch' as const) : ('center' as const),
+    },
+    sizeStyles[size],
+    variantStyles[variant === 'disabled' ? 'disabled' : variant],
+    style,
+  ];
+
+  if (variant === 'gradient') {
+    return (
+      <TouchableOpacity
+        ref={ref}
+        testID={testID}
+        activeOpacity={0.7}
+        onPress={isDisabled ? undefined : onPress}
+        disabled={isDisabled}
+        {...rest}
+      >
+        <LinearGradient
+          colors={[colors.primary, colors.secondary || colors.primary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[
+            {
+              flexDirection: 'row' as const,
+              alignItems: 'center' as const,
+              justifyContent: 'center' as const,
+              opacity: isDisabled ? 0.6 : 1,
+              width: fullWidth ? '100%' as const : undefined,
+              alignSelf: fullWidth ? 'stretch' as const : 'center' as const,
+            },
+            sizeStyles[size],
+            style,
+          ]}
+        >
+          {buttonContent}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      ref={ref}
+      testID={testID}
+      activeOpacity={0.7}
+      onPress={isDisabled ? undefined : onPress}
+      style={containerStyle}
+      disabled={isDisabled}
+      {...rest}
+    >
+      {buttonContent}
     </TouchableOpacity>
   );
 });

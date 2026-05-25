@@ -1,4 +1,4 @@
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from '../components/useColorScheme';
 import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, Manrope_800ExtraBold } from '@expo-google-fonts/manrope';
 import { PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -8,8 +8,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AppProvider } from '../contexts/AppContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { useAppStore } from '../stores/appStore';
 
 import 'react-native-reanimated';
 
@@ -28,6 +28,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const initialize = useAppStore(s => s.initialize);
   const [fontsLoaded] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -39,8 +40,6 @@ export default function RootLayout() {
     Manrope_600SemiBold,
     Manrope_700Bold,
     Manrope_800ExtraBold,
-  });
-  const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
@@ -48,12 +47,11 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Any additional setup can go here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+        // Initialize the SQLite database and load all data
+        await initialize();
       } catch (e) {
         console.warn(e);
       } finally {
-        // Tell the application to render
         setAppIsReady(true);
       }
     }
@@ -62,12 +60,12 @@ export default function RootLayout() {
   }, []);
 
   const onLayoutRootView = async () => {
-    if (fontsLoaded && appIsReady && loaded) {
+    if (fontsLoaded && appIsReady) {
       await SplashScreen.hideAsync();
     }
   };
 
-  if (!fontsLoaded || !appIsReady || !loaded) {
+  if (!fontsLoaded || !appIsReady) {
     return null;
   }
 
@@ -75,9 +73,7 @@ export default function RootLayout() {
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AppProvider>
-            <RootLayoutNav />
-          </AppProvider>
+          <RootLayoutNav />
         </ThemeProvider>
       </SafeAreaProvider>
     </View>

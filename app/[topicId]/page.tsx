@@ -1,6 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton/BackButton';
@@ -9,7 +9,7 @@ import ProgressBar from '../../components/ProgressBar/ProgressBar';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { scale, responsiveFontSize } from '../../constants/responsive';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import { fetchTopics } from '../../services/mockData';
+import { useApp } from '../../stores/appStore';
 import { Lesson, Topic } from '../../types';
 import Skeleton from '../../components/Skeleton/Skeleton';
 
@@ -18,9 +18,11 @@ export default function TopicScreen() {
   const colors = getThemeColors(isDark);
   const router = useRouter();
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
-  const [topic, setTopic] = useState<Topic | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
+  const { topics, isLoading: storeLoading } = useApp();
+
+  const topic = topics.find(t => t.id === topicId) || null;
+  const isLoading = storeLoading;
+
   const getTopicIcon = (id: string): any => {
     const iconMap: { [key: string]: any } = {
       'computer-basics': 'settings-input-component',
@@ -29,25 +31,6 @@ export default function TopicScreen() {
     };
     return iconMap[id] || 'layers';
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      const loadTopic = async () => {
-        if (!topicId) return;
-        try {
-          setIsLoading(true);
-          const topics = await fetchTopics();
-          const topicData = topics.find((t: any) => t.id === topicId);
-          setTopic(topicData || null);
-        } catch (error) {
-          console.error(`Error loading topic ${topicId}:`, error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadTopic();
-    }, [topicId])
-  );
 
   const handleStartLesson = (lesson: Lesson) => {
     router.push(`/${topicId}/${lesson.id}/page`);

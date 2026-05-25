@@ -16,39 +16,24 @@ import { LinearGradient } from 'expo-linear-gradient';
 import StreakRestoreModal from '../../components/StreakRestoreModal/StreakRestoreModal';
 import PageContainer from '../../components/PageContainer/PageContainer';
 import { scale, responsiveFontSize } from '../../constants/responsive';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../stores/appStore';
 import { getThemeColors, useTheme } from '../../contexts/ThemeContext';
-import { fetchTopics } from '../../services/mockData';
 import { Topic } from '../../types';
 import Skeleton from '../../components/Skeleton/Skeleton';
 
 import TopicCard from '../../components/TopicCard/TopicCard';
 
 const HomeScreen = () => {
-  const { 
-    isLoading, 
-    userProgress, 
+  const {
+    isLoading,
+    userProgress,
     refreshData,
     userProfile,
     streakData,
-    updateStreak
+    updateStreak,
+    topics,
   } = useApp();
-  
-  const [topics, setTopics] = useState<Topic[]>([]);
-  
-  useEffect(() => {
-    const loadTopics = async () => {
-      try {
-        const fetchedTopics = await fetchTopics();
-        setTopics(fetchedTopics);
-      } catch (error) {
-        console.error('Failed to load topics:', error);
-      }
-    };
-    
-    loadTopics();
-  }, []);
-  
+
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   
